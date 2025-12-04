@@ -1,0 +1,209 @@
+{
+  "structure_id": "meta_blueprint",
+  "structure_type": "blueprint",
+  "intent": "define_valid_structon_format",
+  "description": "This is the meta-blueprint that defines what a valid structon looks like. All structons must conform to this schema.",
+  
+  "schema": {
+    "structure_id": {
+      "type": "string",
+      "required": true,
+      "description": "Unique identifier for the structon (UUID recommended)"
+    },
+    "structure_type": {
+      "type": "string",
+      "required": true,
+      "enum": ["sense", "act", "feedback", "composite", "blueprint"],
+      "description": "The type of structon"
+    },
+    "intent": {
+      "type": "string",
+      "required": true,
+      "description": "What this structon is meant to accomplish"
+    },
+    "phases": {
+      "type": "array",
+      "required": true,
+      "items": {
+        "type": "string",
+        "enum": ["sense", "act", "feedback"]
+      },
+      "description": "Which phases this structon includes"
+    },
+    "tension": {
+      "type": "number",
+      "required": true,
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "description": "Current tension level (drive force)"
+    },
+    "importance": {
+      "type": "number",
+      "required": true,
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "description": "How important this structon is"
+    },
+    "nodes": {
+      "type": "array",
+      "required": true,
+      "items": {
+        "$ref": "#/definitions/node"
+      },
+      "description": "The nodes that make up this structon"
+    },
+    "edges": {
+      "type": "array",
+      "required": true,
+      "items": {
+        "$ref": "#/definitions/edge"
+      },
+      "description": "Connections between nodes"
+    },
+    "tension_profile": {
+      "type": "object",
+      "required": false,
+      "properties": {
+        "max_tension": {"type": "number"},
+        "node_conflicts": {"type": "array"},
+        "barriers": {"type": "array"},
+        "unresolved_desires": {"type": "array"}
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "required": false,
+      "properties": {
+        "created_at": {"type": "string", "format": "date-time"},
+        "updated_at": {"type": "string", "format": "date-time"},
+        "version": {"type": "integer"},
+        "parent_id": {"type": "string"}
+      }
+    }
+  },
+  
+  "definitions": {
+    "node": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "required": true,
+          "description": "Unique node identifier within this structon"
+        },
+        "type": {
+          "type": "string",
+          "required": true,
+          "enum": ["input", "process", "output", "sub_structon", "decision"],
+          "description": "The type of node"
+        },
+        "phase": {
+          "type": "string",
+          "required": true,
+          "enum": ["sense", "act", "feedback"],
+          "description": "Which phase this node belongs to"
+        },
+        "description": {
+          "type": "string",
+          "required": true,
+          "description": "Human-readable description of what this node does"
+        },
+        "atomic": {
+          "type": "string",
+          "required": false,
+          "description": "Name of the atomic function to execute"
+        },
+        "structon_ref": {
+          "type": "string",
+          "required": false,
+          "description": "Reference to nested structon (for sub_structon type)"
+        },
+        "input": {
+          "type": ["string", "array"],
+          "required": false,
+          "description": "Input variable(s) - use $ prefix for variable references"
+        },
+        "output": {
+          "type": "string",
+          "required": false,
+          "description": "Output variable name - use $ prefix"
+        },
+        "args": {
+          "type": "object",
+          "required": false,
+          "description": "Additional arguments for the atomic function"
+        },
+        "tension": {
+          "type": "number",
+          "required": false,
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "description": "Node-level tension"
+        },
+        "state": {
+          "type": "string",
+          "required": false,
+          "enum": ["pending", "active", "completed", "failed"],
+          "description": "Current state of the node"
+        }
+      }
+    },
+    "edge": {
+      "type": "object",
+      "properties": {
+        "from": {
+          "type": "string",
+          "required": true,
+          "description": "Source node ID"
+        },
+        "to": {
+          "type": "string",
+          "required": true,
+          "description": "Target node ID"
+        },
+        "condition": {
+          "type": "string",
+          "required": false,
+          "description": "Optional condition for this edge"
+        }
+      }
+    }
+  },
+  
+  "available_atomics": [
+    "get",
+    "set",
+    "merge",
+    "filter",
+    "map",
+    "first",
+    "sort",
+    "if",
+    "loop",
+    "branch",
+    "load_structon",
+    "save_structon",
+    "query_structons",
+    "create_structon",
+    "update_structon",
+    "call_llm",
+    "parse_response",
+    "validate_json",
+    "emit",
+    "log",
+    "read_input",
+    "calculate_tension",
+    "propagate_tension",
+    "get_highest_tension"
+  ],
+  
+  "validation_rules": [
+    "All structons must have at least one node",
+    "All edges must reference existing nodes",
+    "Nodes with type 'sub_structon' must have 'structon_ref'",
+    "Nodes with other types must have 'atomic'",
+    "All phases should be represented for complete structons",
+    "Tension must be between 0.0 and 1.0",
+    "No circular dependencies in edges (DAG required)"
+  ]
+}

@@ -1,0 +1,144 @@
+{
+  "structure_id": "feedback_blueprint",
+  "structure_type": "blueprint",
+  "intent": "template_for_feedback_structons",
+  "description": "Blueprint for creating feedback-phase structons that evaluate results and trigger learning.",
+  
+  "template": {
+    "structure_id": "{generated_uuid}",
+    "structure_type": "feedback",
+    "intent": "{feedback_intent}",
+    "phases": ["feedback"],
+    "tension": 0.5,
+    "importance": 0.5,
+    
+    "nodes": [
+      {
+        "id": "capture",
+        "type": "input",
+        "phase": "feedback",
+        "description": "Capture action result",
+        "atomic": "get",
+        "input": "$action_result",
+        "output": "$captured"
+      },
+      {
+        "id": "evaluate",
+        "type": "process",
+        "phase": "feedback",
+        "description": "Evaluate success/failure",
+        "atomic": "{evaluate_atomic}",
+        "input": "$captured",
+        "args": "{evaluate_args}",
+        "output": "$evaluation"
+      },
+      {
+        "id": "update_tension",
+        "type": "process",
+        "phase": "feedback",
+        "description": "Update tension based on result",
+        "atomic": "calculate_tension",
+        "input": "$evaluation",
+        "output": "$new_tension"
+      },
+      {
+        "id": "decide_evolution",
+        "type": "decision",
+        "phase": "feedback",
+        "description": "Decide if evolution is needed",
+        "atomic": "if",
+        "input": "$evaluation",
+        "args": {"condition": "success < 0.5"},
+        "output": "$needs_evolution"
+      },
+      {
+        "id": "output",
+        "type": "output",
+        "phase": "feedback",
+        "description": "Emit feedback result",
+        "atomic": "emit",
+        "input": ["$evaluation", "$new_tension", "$needs_evolution"],
+        "output": "$feedback_result"
+      }
+    ],
+    
+    "edges": [
+      {"from": "capture", "to": "evaluate"},
+      {"from": "evaluate", "to": "update_tension"},
+      {"from": "evaluate", "to": "decide_evolution"},
+      {"from": "update_tension", "to": "output"},
+      {"from": "decide_evolution", "to": "output"}
+    ]
+  },
+  
+  "variants": {
+    "simple_success": {
+      "intent": "evaluate_simple_success",
+      "evaluate_atomic": "if",
+      "evaluate_args": {"condition": "result != null"}
+    },
+    "llm_evaluation": {
+      "intent": "llm_evaluate_quality",
+      "evaluate_atomic": "call_llm",
+      "evaluate_args": {
+        "prompt": "Evaluate this result on a scale of 0-1: {$captured}. Return JSON with 'score' and 'reason'."
+      }
+    },
+    "comparison": {
+      "intent": "compare_to_expectation",
+      "evaluate_atomic": "call_llm",
+      "evaluate_args": {
+        "prompt": "Compare actual result {$captured} to expected {$expected}. How close is it?"
+      }
+    },
+    "learning": {
+      "intent": "extract_learning",
+      "evaluate_atomic": "call_llm",
+      "evaluate_args": {
+        "prompt": "What can be learned from this result? What should be done differently next time?"
+      }
+    },
+    "evolution_trigger": {
+      "intent": "trigger_structon_evolution",
+      "evaluate_atomic": "call_llm",
+      "evaluate_args": {
+        "prompt": "Based on this feedback, how should the original structon be modified to perform better?"
+      }
+    }
+  },
+  
+  "feedback_schema": {
+    "description": "Standard feedback object structure",
+    "properties": {
+      "source_structon_id": "string",
+      "action_result": "any",
+      "success": "boolean",
+      "score": "number (0-1)",
+      "error": "string or null",
+      "duration_ms": "number",
+      "tension_before": "number",
+      "tension_after": "number",
+      "needs_evolution": "boolean",
+      "learning": "string",
+      "timestamp": "ISO datetime"
+    }
+  },
+  
+  "usage": {
+    "description": "Use this blueprint to generate feedback structons",
+    "example": {
+      "variant": "llm_evaluation",
+      "customizations": {
+        "additional_nodes": [
+          {
+            "id": "store_feedback",
+            "type": "process",
+            "phase": "feedback",
+            "atomic": "save_structon",
+            "input": "$feedback_result"
+          }
+        ]
+      }
+    }
+  }
+}
