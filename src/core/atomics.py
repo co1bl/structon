@@ -324,12 +324,96 @@ def atomic_update_structon(input_data: Any, args: Dict[str, Any], context: Dict[
 # LLM Operations
 # =============================================================================
 
-# This will be replaced with actual LLM calls
-LLM_PROVIDER = None
+# LLM Provider - initialized on first use
+_LLM_PROVIDER = None
+_LLM_PROVIDER_INITIALIZED = False
+
+
+def _get_llm_provider():
+    """Get or create LLM provider based on environment."""
+    global _LLM_PROVIDER, _LLM_PROVIDER_INITIALIZED
+    
+    if _LLM_PROVIDER_INITIALIZED:
+        return _LLM_PROVIDER
+    
+    _LLM_PROVIDER_INITIALIZED = True
+    
+    # Try OpenAI first
+    if os.environ.get("OPENAI_API_KEY"):
+        try:
+            import openai
+            _LLM_PROVIDER = OpenAILLM()
+            print("[LLM] Using OpenAI provider")
+            return _LLM_PROVIDER
+        except ImportError:
+            print("[LLM] OpenAI key found but 'openai' package not installed")
+    
+    # Try Anthropic
+    if os.environ.get("ANTHROPIC_API_KEY"):
+        try:
+            import anthropic
+            _LLM_PROVIDER = AnthropicLLM()
+            print("[LLM] Using Anthropic provider")
+            return _LLM_PROVIDER
+        except ImportError:
+            print("[LLM] Anthropic key found but 'anthropic' package not installed")
+    
+    print("[LLM] No API key found. Using mock provider.")
+    return None
+
+
+class OpenAILLM:
+    """OpenAI LLM wrapper."""
+    
+    def __init__(self, model: str = None):
+        self.model = model or os.environ.get("OPENAI_MODEL", "gpt-4o")
+        self.api_key = os.environ.get("OPENAI_API_KEY")
+    
+    def generate(self, prompt: str, max_tokens: int = 2048) -> str:
+        try:
+            import openai
+            
+            client = openai.OpenAI(api_key=self.api_key)
+            
+            response = client.chat.completions.create(
+                model=self.model,
+                max_tokens=max_tokens,
+                messages=[{"role": "user", "content": prompt}]
+            )
+            
+            return response.choices[0].message.content
+        except Exception as e:
+            return f"[OpenAI Error: {str(e)}]"
+
+
+class AnthropicLLM:
+    """Anthropic LLM wrapper."""
+    
+    def __init__(self, model: str = None):
+        self.model = model or os.environ.get("ANTHROPIC_MODEL", "claude-3-sonnet-20240229")
+        self.api_key = os.environ.get("ANTHROPIC_API_KEY")
+    
+    def generate(self, prompt: str, max_tokens: int = 2048) -> str:
+        try:
+            import anthropic
+            
+            client = anthropic.Anthropic(api_key=self.api_key)
+            
+            message = client.messages.create(
+                model=self.model,
+                max_tokens=max_tokens,
+                messages=[{"role": "user", "content": prompt}]
+            )
+            
+            return message.content[0].text
+        except Exception as e:
+            return f"[Anthropic Error: {str(e)}]"
 
 
 def atomic_call_llm(input_data: Any, args: Dict[str, Any], context: Dict[str, Any]) -> str:
     """Call the language model."""
+    provider = _get_llm_provider()
+    
     prompt_template = args.get("prompt", "{input}")
     
     # Format prompt with input
@@ -340,12 +424,17 @@ def atomic_call_llm(input_data: Any, args: Dict[str, Any], context: Dict[str, An
         for key, value in input_data.items():
             prompt = prompt.replace(f"{{${key}}}", str(value))
             prompt = prompt.replace(f"{{{key}}}", str(value))
+    elif input_data is None:
+        prompt = prompt_template.replace("{input}", "")
     else:
         prompt = prompt_template.replace("{input}", str(input_data))
     
+    # Clean up any remaining template variables
+    prompt = prompt.replace("{input}", "").replace("{$input}", "")
+    
     # If LLM provider is configured, use it
-    if LLM_PROVIDER:
-        return LLM_PROVIDER.generate(prompt)
+    if provider:
+        return provider.generate(prompt)
     
     # Placeholder response
     return f"[LLM Response to: {prompt[:100]}...]"

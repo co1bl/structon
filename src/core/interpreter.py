@@ -138,14 +138,20 @@ class Interpreter:
     
     def _topological_sort(self, nodes: List[Node], edges: List) -> List[Node]:
         """Sort nodes in execution order based on edges."""
+        if not nodes:
+            return []
+        
         # Build adjacency list
         node_map = {node.id: node for node in nodes}
+        node_ids = set(node_map.keys())
         in_degree = {node.id: 0 for node in nodes}
         adj = {node.id: [] for node in nodes}
         
         for edge in edges:
-            adj[edge.from_node].append(edge.to_node)
-            in_degree[edge.to_node] += 1
+            # Only consider edges where BOTH nodes are in our subset
+            if edge.from_node in node_ids and edge.to_node in node_ids:
+                adj[edge.from_node].append(edge.to_node)
+                in_degree[edge.to_node] += 1
         
         # Kahn's algorithm
         queue = [nid for nid, degree in in_degree.items() if degree == 0]
