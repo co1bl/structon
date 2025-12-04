@@ -65,8 +65,8 @@ from .factory import (
     create_structon,
     create_from_blueprint,
     
-    # LLM generation
-    generate_structon_prompt,
+    # LLM generation (template-based)
+    generate_customization_prompt,
     generate_structon_via_llm,
     
     # Saving
@@ -122,7 +122,7 @@ __all__ = [
     "create_node",
     "create_structon",
     "create_from_blueprint",
-    "generate_structon_prompt",
+    "generate_customization_prompt",
     "generate_structon_via_llm",
     "save_structon",
     "quick_llm_structon",

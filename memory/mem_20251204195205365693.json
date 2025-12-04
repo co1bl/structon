@@ -1,0 +1,24 @@
+{
+  "id": "mem_20251204195205365693",
+  "intent": "Gathering necessary information before processing a request",
+  "content": {
+    "lesson": "Always request the required information from the user to ensure you can effectively complete the task.",
+    "source_task": "$task",
+    "source_result": "Please provide the text that you would like me to summarize, and I'll be able to help you with that.",
+    "was_successful": true
+  },
+  "sense_patterns": [
+    "please",
+    "provide",
+    "text",
+    "summarize",
+    "help",
+    "with",
+    "that"
+  ],
+  "tension": 0.8,
+  "success_rate": 0.5,
+  "times_used": 0,
+  "created_at": "2025-12-04T19:52:05.365763",
+  "last_activated": null
+}

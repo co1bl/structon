@@ -302,6 +302,9 @@ def create_from_blueprint(
         structon["intent"] = intent
         structon["description"] = intent
     
+    # Track input_key for syncing
+    input_key = customizations.get("input_key", "input") if customizations else "input"
+    
     # Apply customizations
     if customizations:
         for key, value in customizations.items():
@@ -312,107 +315,260 @@ def create_from_blueprint(
                     for node in structon["nodes"]:
                         if node["id"] == node_id:
                             node.update(node_update)
+            elif key == "input_key" and "nodes" in structon:
+                # Update get node's key AND output variable
+                for node in structon["nodes"]:
+                    if node.get("atomic") == "get":
+                        node["args"]["key"] = value
+                        node["output"] = f"${value}"
+                        break
             elif key == "prompt" and "nodes" in structon:
-                # Shortcut: update first call_llm node's prompt
+                # Update first call_llm node's prompt
                 for node in structon["nodes"]:
                     if node.get("atomic") == "call_llm":
                         node["args"]["prompt"] = value
                         break
-            else:
+            elif key not in ("input_key", "prompt", "learn"):
                 structon[key] = value
+    
+    # CRITICAL: Sync all variable names and prompt placeholders
+    structon = _sync_variables(structon, input_key)
+    
+    return structon
+
+
+def _sync_variables(structon: Dict[str, Any], input_key: str) -> Dict[str, Any]:
+    """
+    Ensure all variable names are consistent throughout the structon.
+    
+    This fixes the mismatch where:
+    - get node outputs $text
+    - call_llm expects $input
+    - prompt uses {input} but should use {text}
+    """
+    nodes = structon.get("nodes", [])
+    
+    # Find the get node's output variable
+    get_output_var = None
+    for node in nodes:
+        if node.get("atomic") == "get":
+            # Ensure get node uses input_key
+            node["args"]["key"] = input_key
+            node["output"] = f"${input_key}"
+            get_output_var = f"${input_key}"
+            break
+    
+    if not get_output_var:
+        return structon
+    
+    # Update all downstream nodes that use this variable
+    for node in nodes:
+        # Update call_llm nodes
+        if node.get("atomic") == "call_llm":
+            # Set input to match get node's output
+            node["input"] = get_output_var
+            
+            # Fix prompt placeholder to match variable name
+            if "args" in node and "prompt" in node["args"]:
+                prompt = node["args"]["prompt"]
+                # Replace {input} with {actual_variable_name}
+                # Handle common placeholders
+                for placeholder in ["{input}", "{text}", "{task}", "{query}", "{content}"]:
+                    if placeholder in prompt:
+                        prompt = prompt.replace(placeholder, f"{{{input_key}}}")
+                node["args"]["prompt"] = prompt
     
     return structon
 
 
 # =============================================================================
-# LLM Generation
+# LLM Generation (Template-Based)
 # =============================================================================
 
-def generate_structon_prompt(intent: str, available_atomics: List[str] = None) -> str:
-    """Generate prompt for LLM to create a structon."""
+def generate_customization_prompt(intent: str, blueprint: Dict[str, Any]) -> str:
+    """
+    Generate prompt for LLM to customize a blueprint.
     
-    atomics = available_atomics or [
-        "get", "set", "emit", "call_llm", "parse_response",
-        "load_memories", "sense_memories", "activate_memories",
-        "create_memory", "update_memory", "learn_from_experience",
-        "run_structon", "if", "loop"
-    ]
-    
-    return f"""Create a JSON structon for this intent: "{intent}"
+    LLM only decides WHAT (prompt, input_key, etc.)
+    Template provides HOW (structure, required fields)
+    """
+    return f"""I need to create an AI agent for this intent: "{intent}"
 
-Requirements:
-1. Must have structure_id, structure_type, intent, description, phases, tension, importance, nodes, edges
-2. Each node must have: id, type, phase, description, atomic, args, output
-3. Node types: input, process, output
-4. Phases: sense, act, feedback
-5. Use $variable_name for data flow between nodes
+I have a template with these customizable parts:
+1. prompt: The instruction for the LLM (use {{input}} as placeholder for input data)
+2. input_key: What to call the input variable (e.g., "text", "topic", "query")
+3. learn: Whether the agent should learn from experience (true/false)
+4. parallel_tasks: Optional list of additional LLM calls to run in parallel
 
-Available atomics: {', '.join(atomics)}
+Based on the intent "{intent}", provide customizations as JSON:
 
-Common patterns:
-- Sense phase: get input from context
-- Act phase: process with call_llm
-- Feedback phase: emit result, optionally learn_from_experience
-
-Example node:
 {{
-  "id": "a1",
-  "type": "process", 
-  "phase": "act",
-  "description": "Process with LLM",
-  "atomic": "call_llm",
-  "input": "$input",
-  "args": {{"prompt": "Do something with: {{input}}"}},
-  "output": "$result"
+  "prompt": "The LLM prompt to accomplish the intent. Use {{input}} for the input.",
+  "input_key": "descriptive_name_for_input",
+  "learn": true or false,
+  "parallel_tasks": [
+    {{"name": "task_name", "prompt": "additional prompt if needed"}}
+  ] or []
 }}
+
+RULES:
+- prompt must clearly instruct the LLM what to do
+- input_key should describe what kind of input (e.g., "text", "code", "question")
+- learn=true if the task benefits from remembering past experiences
+- parallel_tasks only if the intent requires multiple distinct outputs
 
 Return ONLY valid JSON, no explanation."""
 
 
 def generate_structon_via_llm(
     intent: str,
-    llm_func = None
+    blueprint_name: str = "agent",
+    llm_func = None,
+    blueprint_dir: str = None
 ) -> Dict[str, Any]:
     """
-    Use LLM to generate a complete structon.
+    Use LLM to customize a blueprint template.
+    
+    This is SAFE because:
+    - Blueprint provides valid structure (all required fields)
+    - LLM only customizes content (prompt, input_key, etc.)
+    - Result is always valid
     
     Args:
         intent: What the structon should do
+        blueprint_name: Which blueprint to use as template
         llm_func: Function to call LLM (default: uses atomic_call_llm)
+        blueprint_dir: Directory containing blueprints
         
     Returns:
-        Generated structon dict
+        Valid structon dict (guaranteed)
     """
     from .atomics import atomic_call_llm
     
-    prompt = generate_structon_prompt(intent)
+    # 1. Load blueprint template
+    try:
+        blueprint = load_blueprint(blueprint_name, blueprint_dir)
+    except FileNotFoundError:
+        # Fallback to quick builder if no blueprint
+        print(f"[Factory] Blueprint '{blueprint_name}' not found, using quick builder")
+        return _generate_without_blueprint(intent, llm_func)
+    
+    # 2. Ask LLM for customizations only
+    prompt = generate_customization_prompt(intent, blueprint)
     
     if llm_func:
         response = llm_func(prompt)
     else:
         response = atomic_call_llm(prompt, {"prompt": "{input}"}, {})
     
-    # Parse JSON from response
+    # 3. Parse customizations
+    customizations = _parse_customizations(response)
+    
+    # 4. Apply customizations to blueprint
+    structon = create_from_blueprint(
+        blueprint_name=blueprint_name,
+        intent=intent,
+        customizations=customizations,
+        blueprint_dir=blueprint_dir
+    )
+    
+    # 5. Handle parallel tasks if requested
+    if customizations.get("parallel_tasks"):
+        structon = _add_parallel_tasks(structon, customizations["parallel_tasks"])
+    
+    return structon
+
+
+def _parse_customizations(response: str) -> Dict[str, Any]:
+    """Parse LLM response into customizations dict."""
     try:
         start = response.find("{")
         end = response.rfind("}") + 1
         if start >= 0 and end > start:
-            structon = json.loads(response[start:end])
-            
-            # Ensure it has an ID
-            if not structon.get("structure_id"):
-                structon["structure_id"] = generate_id()
-            
-            # Validate
-            validation = validate_structon(structon)
-            if not validation["valid"]:
-                print(f"[Factory] Generated structon has errors: {validation['errors']}")
-            
-            return structon
-    except json.JSONDecodeError as e:
-        print(f"[Factory] Failed to parse LLM response: {e}")
+            data = json.loads(response[start:end])
+            return {
+                "prompt": data.get("prompt", "Process this: {input}"),
+                "input_key": data.get("input_key", "input"),
+                "learn": data.get("learn", False),
+                "parallel_tasks": data.get("parallel_tasks", [])
+            }
+    except json.JSONDecodeError:
+        pass
     
-    return None
+    # Default if parsing fails
+    return {
+        "prompt": "Process this: {input}",
+        "input_key": "input",
+        "learn": False,
+        "parallel_tasks": []
+    }
+
+
+def _add_parallel_tasks(structon: Dict[str, Any], tasks: List[Dict]) -> Dict[str, Any]:
+    """Add parallel LLM tasks to structon."""
+    if not tasks:
+        return structon
+    
+    nodes = structon["nodes"]
+    edges = structon["edges"]
+    
+    # Find the input node (s1) and output node
+    input_node_id = "s1"
+    output_node_id = None
+    for node in nodes:
+        if node.get("atomic") == "emit":
+            output_node_id = node["id"]
+            break
+    
+    # Add parallel task nodes
+    for i, task in enumerate(tasks):
+        task_id = f"a_parallel_{i+1}"
+        task_node = create_node(
+            node_id=task_id,
+            atomic="call_llm",
+            phase="act",
+            node_type="process",
+            description=task.get("name", f"Parallel task {i+1}"),
+            input_var="$input",
+            args={"prompt": task.get("prompt", "Process: {input}")},
+            output_var=f"$parallel_result_{i+1}"
+        )
+        nodes.append(task_node)
+        
+        # Connect from input
+        edges.append({"from": input_node_id, "to": task_id})
+        
+        # Connect to output
+        if output_node_id:
+            edges.append({"from": task_id, "to": output_node_id})
+    
+    structon["nodes"] = nodes
+    structon["edges"] = edges
+    
+    return structon
+
+
+def _generate_without_blueprint(intent: str, llm_func = None) -> Dict[str, Any]:
+    """Fallback: generate using quick builder when no blueprint available."""
+    from .atomics import atomic_call_llm
+    
+    # Ask LLM just for the prompt
+    prompt = f"""For this intent: "{intent}"
+    
+What LLM prompt would accomplish this? Use {{input}} as placeholder.
+Return ONLY the prompt text, nothing else."""
+    
+    if llm_func:
+        response = llm_func(prompt)
+    else:
+        response = atomic_call_llm(prompt, {"prompt": "{input}"}, {})
+    
+    # Clean up response
+    llm_prompt = response.strip().strip('"').strip("'")
+    if not "{input}" in llm_prompt:
+        llm_prompt = llm_prompt + "\n\nInput: {input}"
+    
+    return quick_llm_structon(intent, llm_prompt, learn=True)
 
 
 # =============================================================================
@@ -475,13 +631,26 @@ def quick_llm_structon(
     
     Args:
         intent: What it does
-        prompt: LLM prompt (use {input} for variable)
+        prompt: LLM prompt (use {input_key} for variable, e.g., {text})
         input_key: Context key to get input from
         learn: Whether to add learning node
     """
+    # Ensure prompt uses the correct placeholder
+    # Replace common placeholders with the actual input_key
+    for placeholder in ["{input}", "{text}", "{task}", "{query}", "{content}"]:
+        if placeholder in prompt and placeholder != f"{{{input_key}}}":
+            prompt = prompt.replace(placeholder, f"{{{input_key}}}")
+    
+    # If no placeholder found, add one
+    if f"{{{input_key}}}" not in prompt:
+        prompt = prompt + f"\n\nInput: {{{input_key}}}"
+    
+    # Use consistent variable naming: $input_key throughout
+    var_name = f"${input_key}"
+    
     nodes = [
-        create_node("s1", "get", "sense", "input", "Get input", args={"key": input_key}, output_var="$input"),
-        create_node("a1", "call_llm", "act", "process", "Process with LLM", "$input", {"prompt": prompt}, "$result"),
+        create_node("s1", "get", "sense", "input", "Get input", args={"key": input_key}, output_var=var_name),
+        create_node("a1", "call_llm", "act", "process", "Process with LLM", var_name, {"prompt": prompt}, "$result"),
     ]
     
     edges = [

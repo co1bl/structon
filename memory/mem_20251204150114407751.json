@@ -1,0 +1,22 @@
+{
+  "id": "mem_20251204150114407751",
+  "intent": "The importance of clear communication and adaptability in task execution",
+  "content": {
+    "lesson": "Even with absent data or results (e.g., 'None'), success is achievable through effective adaptation to the situation and resourceful problem-solving.",
+    "source_task": "",
+    "source_result": "None",
+    "was_successful": true
+  },
+  "sense_patterns": [
+    "communication",
+    "adaptability",
+    "no data",
+    "flexibility",
+    "problem-solving"
+  ],
+  "tension": 0.8,
+  "success_rate": 0.5,
+  "times_used": 0,
+  "created_at": "2025-12-04T15:01:14.407843",
+  "last_activated": null
+}

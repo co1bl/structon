@@ -1,0 +1,22 @@
+{
+  "id": "mem_20251204194212873454",
+  "intent": "Handling situations where input data is missing",
+  "content": {
+    "lesson": "Always check if input data is available before processing and provide clear instructions if missing.",
+    "source_task": "$task",
+    "source_result": "It seems that there is no text provided for me to summarize. If you have specific content you'd like summarized or analyzed, please provide the text, and I'd be happy to assist!",
+    "was_successful": true
+  },
+  "sense_patterns": [
+    "missing",
+    "no text",
+    "input not provided",
+    "data required",
+    "need content"
+  ],
+  "tension": 0.8,
+  "success_rate": 0.5,
+  "times_used": 0,
+  "created_at": "2025-12-04T19:42:12.873546",
+  "last_activated": null
+}

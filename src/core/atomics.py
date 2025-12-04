@@ -740,9 +740,12 @@ def atomic_call_llm(input_data: Any, args: Dict[str, Any], context: Dict[str, An
     
     prompt_template = args.get("prompt", "{input}")
     
-    # Format prompt with input
+    # Format prompt with input - handle any placeholder
     if isinstance(input_data, str):
         prompt = prompt_template.replace("{input}", input_data)
+        # Also replace common placeholders that represent the input
+        for placeholder in ["{text}", "{query}", "{content}", "{task}", "{topic}", "{data}"]:
+            prompt = prompt.replace(placeholder, input_data)
     elif isinstance(input_data, dict):
         prompt = prompt_template
         for key, value in input_data.items():

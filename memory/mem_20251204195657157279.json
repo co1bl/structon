@@ -1,0 +1,22 @@
+{
+  "id": "mem_20251204195657157279",
+  "intent": "Extracting key points from provided text",
+  "content": {
+    "lesson": "Engaging the user by asking them to provide input ensures accuracy and relevance of the summary.",
+    "source_task": "$task",
+    "source_result": "Certainly! Please provide the text you'd like summarized, and I will identify its key points for you.",
+    "was_successful": true
+  },
+  "sense_patterns": [
+    "text",
+    "summary",
+    "key points",
+    "summarize",
+    "identify"
+  ],
+  "tension": 0.8,
+  "success_rate": 0.5,
+  "times_used": 0,
+  "created_at": "2025-12-04T19:56:57.157347",
+  "last_activated": null
+}

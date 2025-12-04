@@ -1,0 +1,22 @@
+{
+  "id": "mem_20251204195759740859",
+  "intent": "Handling user requests for summarization",
+  "content": {
+    "lesson": "Ensure clear communication by confirming the task details before proceeding, which helps in successfully meeting the user's expectations.",
+    "source_task": "$task",
+    "source_result": "Of course! Please provide the text you'd like me to summarize, and I'll be happy to help.",
+    "was_successful": true
+  },
+  "sense_patterns": [
+    "provide",
+    "text",
+    "summarize",
+    "help",
+    "assist"
+  ],
+  "tension": 0.8,
+  "success_rate": 0.5,
+  "times_used": 0,
+  "created_at": "2025-12-04T19:57:59.740948",
+  "last_activated": null
+}

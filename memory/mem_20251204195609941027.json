@@ -1,0 +1,22 @@
+{
+  "id": "mem_20251204195609941027",
+  "intent": "Adaptability in responding to unclear or open-ended tasks",
+  "content": {
+    "lesson": "Providing a direct request for clarification allows effective handling of ambiguous tasks, ensuring the completion of the task as expected.",
+    "source_task": "$task",
+    "source_result": "Please provide the text you'd like me to summarize, and I'll be happy to help!",
+    "was_successful": true
+  },
+  "sense_patterns": [
+    "ask",
+    "clarify",
+    "requirements",
+    "details",
+    "summarize"
+  ],
+  "tension": 0.8,
+  "success_rate": 0.5,
+  "times_used": 0,
+  "created_at": "2025-12-04T19:56:09.941117",
+  "last_activated": null
+}
