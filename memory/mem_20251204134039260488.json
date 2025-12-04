@@ -1,0 +1,26 @@
+{
+  "id": "mem_20251204134039260488",
+  "intent": "How to research technical topics effectively",
+  "content": {
+    "lesson": "Start with overview, identify key players, note recent breakthroughs, assess challenges, predict future",
+    "steps": [
+      "Get broad overview first",
+      "Identify major companies and researchers",
+      "Find recent breakthroughs (last 1-2 years)",
+      "Understand current challenges",
+      "Project future directions"
+    ]
+  },
+  "sense_patterns": [
+    "research",
+    "investigate",
+    "current state",
+    "overview",
+    "technical"
+  ],
+  "tension": 0.7200000000000001,
+  "success_rate": 0.6000000000000001,
+  "times_used": 1,
+  "created_at": "2025-12-04T13:40:39.260522",
+  "last_activated": "2025-12-04T13:41:07.990742"
+}
