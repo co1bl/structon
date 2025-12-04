@@ -1,112 +1,59 @@
 {
   "structure_id": "act_blueprint",
-  "structure_type": "blueprint",
-  "intent": "template_for_act_structons",
-  "description": "Blueprint for creating act-phase structons that perform actions and make changes.",
-  
-  "template": {
-    "structure_id": "{generated_uuid}",
-    "structure_type": "act",
-    "intent": "{act_intent}",
-    "phases": ["act"],
-    "tension": 0.5,
-    "importance": 0.5,
-    
-    "nodes": [
-      {
-        "id": "prepare",
-        "type": "input",
-        "phase": "act",
-        "description": "Prepare inputs for action",
-        "atomic": "{prepare_atomic}",
-        "input": "$perception",
-        "args": "{prepare_args}",
-        "output": "$prepared"
+  "structure_type": "act",
+  "intent": "INTENT_PLACEHOLDER",
+  "description": "INTENT_PLACEHOLDER",
+  "phases": [
+    "sense",
+    "act",
+    "feedback"
+  ],
+  "tension": 0.5,
+  "importance": 0.5,
+  "nodes": [
+    {
+      "id": "s1",
+      "type": "input",
+      "phase": "sense",
+      "description": "Get input",
+      "atomic": "get",
+      "input": null,
+      "args": {
+        "key": "input"
       },
-      {
-        "id": "execute",
-        "type": "process",
-        "phase": "act",
-        "description": "Execute the main action",
-        "atomic": "{execute_atomic}",
-        "input": "$prepared",
-        "args": "{execute_args}",
-        "output": "$executed"
+      "output": "$input"
+    },
+    {
+      "id": "a1",
+      "type": "process",
+      "phase": "act",
+      "description": "Process",
+      "atomic": "call_llm",
+      "input": "$input",
+      "args": {
+        "prompt": "PROMPT_PLACEHOLDER: {input}"
       },
-      {
-        "id": "verify",
-        "type": "process",
-        "phase": "act",
-        "description": "Verify action completed",
-        "atomic": "{verify_atomic}",
-        "input": "$executed",
-        "output": "$verified"
-      },
-      {
-        "id": "output",
-        "type": "output",
-        "phase": "act",
-        "description": "Emit action result",
-        "atomic": "emit",
-        "input": "$verified",
-        "output": "$action_result"
-      }
-    ],
-    
-    "edges": [
-      {"from": "prepare", "to": "execute"},
-      {"from": "execute", "to": "verify"},
-      {"from": "verify", "to": "output"}
-    ]
-  },
-  
-  "variants": {
-    "llm_reasoning": {
-      "intent": "reason_about_problem",
-      "prepare_atomic": "merge",
-      "execute_atomic": "call_llm",
-      "execute_args": {"prompt": "{reasoning_prompt}"},
-      "verify_atomic": "validate_json"
+      "output": "$result"
     },
-    "data_transform": {
-      "intent": "transform_data",
-      "prepare_atomic": "get",
-      "execute_atomic": "map",
-      "execute_args": {"function": "{transform_function}"},
-      "verify_atomic": "filter"
-    },
-    "structon_create": {
-      "intent": "create_new_structon",
-      "prepare_atomic": "get",
-      "execute_atomic": "create_structon",
-      "execute_args": {"blueprint": "{blueprint_ref}"},
-      "verify_atomic": "validate_json"
-    },
-    "decision": {
-      "intent": "make_decision",
-      "prepare_atomic": "merge",
-      "execute_atomic": "call_llm",
-      "execute_args": {"prompt": "Given {$prepared}, decide: {options}"},
-      "verify_atomic": "parse_response"
-    },
-    "decompose": {
-      "intent": "break_into_subtasks",
-      "prepare_atomic": "get",
-      "execute_atomic": "call_llm",
-      "execute_args": {"prompt": "Break this into subtasks: {$prepared}"},
-      "verify_atomic": "parse_response"
+    {
+      "id": "f1",
+      "type": "output",
+      "phase": "feedback",
+      "description": "Emit",
+      "atomic": "emit",
+      "input": "$result",
+      "args": {},
+      "output": "$output"
     }
-  },
-  
-  "usage": {
-    "description": "Use this blueprint to generate act structons",
-    "example": {
-      "variant": "llm_reasoning",
-      "customizations": {
-        "execute_args": {
-          "prompt": "Analyze this problem and propose solutions: {$prepared}"
-        }
-      }
+  ],
+  "edges": [
+    {
+      "from": "s1",
+      "to": "a1"
+    },
+    {
+      "from": "a1",
+      "to": "f1"
     }
-  }
+  ]
 }

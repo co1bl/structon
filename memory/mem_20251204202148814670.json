@@ -1,0 +1,22 @@
+{
+  "id": "mem_20251204202148814670",
+  "intent": "Understanding how to efficiently prompt for additional input completion",
+  "content": {
+    "lesson": "Providing clear instructions or seeking additional input when necessary can ensure task success, especially when initial context is insufficient.",
+    "source_task": "$task",
+    "source_result": "Of course! Please provide the text you would like summarized.",
+    "was_successful": true
+  },
+  "sense_patterns": [
+    "need",
+    "more",
+    "information",
+    "provide",
+    "text"
+  ],
+  "tension": 0.8,
+  "success_rate": 0.5,
+  "times_used": 0,
+  "created_at": "2025-12-04T20:21:48.814749",
+  "last_activated": null
+}

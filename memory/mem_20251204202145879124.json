@@ -1,0 +1,22 @@
+{
+  "id": "mem_20251204202145879124",
+  "intent": "Extracting useful information from context",
+  "content": {
+    "lesson": "When given a broad or unspecified task, ask for clarifying details to ensure the response addresses the user's needs.",
+    "source_task": "$task",
+    "source_result": "Of course! Please provide the context you would like me to extract information from.",
+    "was_successful": true
+  },
+  "sense_patterns": [
+    "provide",
+    "context",
+    "extract",
+    "information",
+    "details"
+  ],
+  "tension": 0.8,
+  "success_rate": 0.5,
+  "times_used": 0,
+  "created_at": "2025-12-04T20:21:45.879238",
+  "last_activated": null
+}

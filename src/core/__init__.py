@@ -74,7 +74,13 @@ from .factory import (
     
     # Quick builders
     quick_llm_structon,
-    quick_memory_structon
+    quick_memory_structon,
+    
+    # Pool composition
+    load_from_pool,
+    list_pool,
+    compose_from_pools,
+    compose_custom
 )
 
 __all__ = [
@@ -127,4 +133,10 @@ __all__ = [
     "save_structon",
     "quick_llm_structon",
     "quick_memory_structon",
+    
+    # Pool composition
+    "load_from_pool",
+    "list_pool",
+    "compose_from_pools",
+    "compose_custom",
 ]

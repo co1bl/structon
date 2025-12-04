@@ -1,0 +1,22 @@
+{
+  "id": "mem_20251204202152395159",
+  "intent": "Crafting effective requests for information",
+  "content": {
+    "lesson": "Ensure clarity by providing detailed context and specifics when requesting information or help to receive the most suitable guidance.",
+    "source_task": "$task",
+    "source_result": "Of course! However, it seems there's no detailed description provided in your request for {experience_description}. If you could supply more specific information about the scenario or your past experi",
+    "was_successful": true
+  },
+  "sense_patterns": [
+    "Provide more specific information",
+    "Include details such as context",
+    "Supply more specific information",
+    "better assist you",
+    "tailored insights or guidance"
+  ],
+  "tension": 0.8,
+  "success_rate": 0.5,
+  "times_used": 0,
+  "created_at": "2025-12-04T20:21:52.395190",
+  "last_activated": null
+}

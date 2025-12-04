@@ -1,108 +1,59 @@
 {
   "structure_id": "sense_blueprint",
-  "structure_type": "blueprint",
-  "intent": "template_for_sense_structons",
-  "description": "Blueprint for creating sense-phase structons that perceive and assess state.",
-  
-  "template": {
-    "structure_id": "{generated_uuid}",
-    "structure_type": "sense",
-    "intent": "{sense_intent}",
-    "phases": ["sense"],
-    "tension": 0.5,
-    "importance": 0.5,
-    
-    "nodes": [
-      {
-        "id": "input",
-        "type": "input",
-        "phase": "sense",
-        "description": "Load or receive input data",
-        "atomic": "{input_atomic}",
-        "args": "{input_args}",
-        "output": "$raw_input"
+  "structure_type": "sense",
+  "intent": "INTENT_PLACEHOLDER",
+  "description": "INTENT_PLACEHOLDER",
+  "phases": [
+    "sense",
+    "act",
+    "feedback"
+  ],
+  "tension": 0.5,
+  "importance": 0.5,
+  "nodes": [
+    {
+      "id": "s1",
+      "type": "input",
+      "phase": "sense",
+      "description": "Get input",
+      "atomic": "get",
+      "input": null,
+      "args": {
+        "key": "input"
       },
-      {
-        "id": "process",
-        "type": "process",
-        "phase": "sense",
-        "description": "Process and interpret input",
-        "atomic": "{process_atomic}",
-        "input": "$raw_input",
-        "args": "{process_args}",
-        "output": "$processed"
+      "output": "$input"
+    },
+    {
+      "id": "a1",
+      "type": "process",
+      "phase": "act",
+      "description": "Process",
+      "atomic": "call_llm",
+      "input": "$input",
+      "args": {
+        "prompt": "PROMPT_PLACEHOLDER: {input}"
       },
-      {
-        "id": "assess",
-        "type": "process",
-        "phase": "sense",
-        "description": "Assess state and calculate tensions",
-        "atomic": "calculate_tension",
-        "input": "$processed",
-        "output": "$assessment"
-      },
-      {
-        "id": "output",
-        "type": "output",
-        "phase": "sense",
-        "description": "Emit perception result",
-        "atomic": "emit",
-        "input": "$assessment",
-        "output": "$perception"
-      }
-    ],
-    
-    "edges": [
-      {"from": "input", "to": "process"},
-      {"from": "process", "to": "assess"},
-      {"from": "assess", "to": "output"}
-    ]
-  },
-  
-  "variants": {
-    "context_loader": {
-      "intent": "load_current_context",
-      "input_atomic": "query_structons",
-      "input_args": {"status": "active"},
-      "process_atomic": "merge"
+      "output": "$result"
     },
-    "change_detector": {
-      "intent": "detect_state_changes",
-      "input_atomic": "load_structon",
-      "input_args": {"snapshot": "previous"},
-      "process_atomic": "diff"
-    },
-    "tension_scanner": {
-      "intent": "find_highest_tension",
-      "input_atomic": "query_structons",
-      "input_args": {"all": true},
-      "process_atomic": "sort",
-      "process_args": {"by": "tension", "order": "desc"}
-    },
-    "world_observer": {
-      "intent": "perceive_external_world",
-      "input_atomic": "read_input",
-      "input_args": {"source": "external"},
-      "process_atomic": "call_llm",
-      "process_args": {"prompt": "Parse this into entities: {$raw_input}"}
-    },
-    "self_observer": {
-      "intent": "perceive_own_state",
-      "input_atomic": "get",
-      "input_args": {"key": "self_state"},
-      "process_atomic": "call_llm",
-      "process_args": {"prompt": "Assess current progress and state"}
+    {
+      "id": "f1",
+      "type": "output",
+      "phase": "feedback",
+      "description": "Emit",
+      "atomic": "emit",
+      "input": "$result",
+      "args": {},
+      "output": "$output"
     }
-  },
-  
-  "usage": {
-    "description": "Use this blueprint to generate sense structons",
-    "example": {
-      "variant": "context_loader",
-      "customizations": {
-        "importance": 0.8,
-        "additional_nodes": []
-      }
+  ],
+  "edges": [
+    {
+      "from": "s1",
+      "to": "a1"
+    },
+    {
+      "from": "a1",
+      "to": "f1"
     }
-  }
+  ]
 }

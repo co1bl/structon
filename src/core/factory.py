@@ -341,42 +341,56 @@ def _sync_variables(structon: Dict[str, Any], input_key: str) -> Dict[str, Any]:
     """
     Ensure all variable names are consistent throughout the structon.
     
-    This fixes the mismatch where:
-    - get node outputs $text
-    - call_llm expects $input
-    - prompt uses {input} but should use {text}
+    ENFORCES STANDARD VARIABLE NAMES:
+    - First get node: outputs $input
+    - LLM nodes: input=$input, output=$result
+    - Emit node: input=$result, output=$output
+    
+    This ensures pool structons can compose together.
     """
     nodes = structon.get("nodes", [])
     
-    # Find the get node's output variable
-    get_output_var = None
-    for node in nodes:
-        if node.get("atomic") == "get":
-            # Ensure get node uses input_key
-            node["args"]["key"] = input_key
-            node["output"] = f"${input_key}"
-            get_output_var = f"${input_key}"
-            break
-    
-    if not get_output_var:
+    if not nodes:
         return structon
     
-    # Update all downstream nodes that use this variable
+    # ENFORCE STANDARD NAMES
+    # 1. First get node outputs $input
     for node in nodes:
-        # Update call_llm nodes
+        if node.get("atomic") == "get":
+            node["args"]["key"] = "input"  # ALWAYS use "input" as key
+            node["output"] = "$input"
+            break
+    
+    # 2. LLM nodes: input=$input, output=$result
+    for node in nodes:
         if node.get("atomic") == "call_llm":
-            # Set input to match get node's output
-            node["input"] = get_output_var
+            node["input"] = "$input"
+            node["output"] = "$result"
             
-            # Fix prompt placeholder to match variable name
+            # Fix prompt to use {input}
             if "args" in node and "prompt" in node["args"]:
                 prompt = node["args"]["prompt"]
-                # Replace {input} with {actual_variable_name}
-                # Handle common placeholders
-                for placeholder in ["{input}", "{text}", "{task}", "{query}", "{content}"]:
-                    if placeholder in prompt:
-                        prompt = prompt.replace(placeholder, f"{{{input_key}}}")
+                # Replace any placeholder with {input}
+                import re
+                prompt = re.sub(r'\{[^}]+\}', '{input}', prompt, count=1)
                 node["args"]["prompt"] = prompt
+    
+    # 3. Emit node: input=$result, output=$output
+    for node in nodes:
+        if node.get("atomic") == "emit":
+            # If there's a call_llm, emit its result
+            has_llm = any(n.get("atomic") == "call_llm" for n in nodes)
+            if has_llm:
+                node["input"] = "$result"
+            else:
+                node["input"] = "$input"
+            node["output"] = "$output"
+    
+    # 4. Learn node: input=$result
+    for node in nodes:
+        if node.get("atomic") == "learn_from_experience":
+            node["input"] = "$result"
+            node["output"] = "$memory"
     
     return structon
 
@@ -692,3 +706,237 @@ def quick_memory_structon(
     ]
     
     return create_structon(intent, nodes, edges)
+
+
+# =============================================================================
+# Pool Composition
+# =============================================================================
+
+POOL_DIR = "./structons"
+
+
+def load_from_pool(pool: str, name: str) -> Dict[str, Any]:
+    """
+    Load a structon from a pool.
+    
+    Args:
+        pool: Pool name (sense, act, feedback)
+        name: Structon name (without .json)
+    
+    Returns:
+        Structon data dict
+    """
+    # Try with and without .json
+    filepath = os.path.join(POOL_DIR, pool, f"{name}.json")
+    if not os.path.exists(filepath):
+        filepath = os.path.join(POOL_DIR, pool, name)
+    
+    if not os.path.exists(filepath):
+        raise FileNotFoundError(f"Structon not found: {pool}/{name}")
+    
+    with open(filepath, 'r') as f:
+        return json.load(f)
+
+
+def list_pool(pool: str) -> List[str]:
+    """List all structons in a pool."""
+    pool_path = os.path.join(POOL_DIR, pool)
+    
+    if not os.path.exists(pool_path):
+        return []
+    
+    return [f.replace('.json', '') for f in os.listdir(pool_path) if f.endswith('.json')]
+
+
+def compose_from_pools(
+    sense: str,
+    act: str,
+    feedback: str,
+    intent: str = None,
+    structure_id: str = None
+) -> Dict[str, Any]:
+    """
+    Compose an agent by referencing one structon from each pool.
+    
+    The composed agent uses run_structon to call each pool structon
+    in sequence: sense → act → feedback.
+    
+    Args:
+        sense: Name of structon from sense pool
+        act: Name of structon from act pool  
+        feedback: Name of structon from feedback pool
+        intent: Optional intent description
+        structure_id: Optional ID (auto-generated if None)
+    
+    Returns:
+        Composed agent structon
+    
+    Example:
+        agent = compose_from_pools(
+            sense="get_input",
+            act="summarize_text",
+            feedback="learn_from_experience"
+        )
+    """
+    # Verify all pool structons exist
+    sense_structon = load_from_pool("sense", sense)
+    act_structon = load_from_pool("act", act)
+    feedback_structon = load_from_pool("feedback", feedback)
+    
+    # Generate intent if not provided
+    if not intent:
+        intent = f"Composed: {sense_structon.get('intent', sense)} → {act_structon.get('intent', act)} → {feedback_structon.get('intent', feedback)}"
+    
+    # Create nodes that reference pool structons
+    nodes = [
+        # SENSE: Run sense pool structon
+        create_node(
+            node_id="s1",
+            atomic="run_structon",
+            phase="sense",
+            node_type="process",
+            description=f"Run sense: {sense}",
+            input_var=None,
+            args={"structon_id": f"sense/{sense}"},
+            output_var="$sense_result"
+        ),
+        
+        # ACT: Run act pool structon with sense output
+        create_node(
+            node_id="a1",
+            atomic="run_structon",
+            phase="act",
+            node_type="process",
+            description=f"Run act: {act}",
+            input_var="$sense_result",
+            args={"structon_id": f"act/{act}"},
+            output_var="$act_result"
+        ),
+        
+        # FEEDBACK: Run feedback pool structon with act output
+        create_node(
+            node_id="f1",
+            atomic="run_structon",
+            phase="feedback",
+            node_type="process",
+            description=f"Run feedback: {feedback}",
+            input_var="$act_result",
+            args={"structon_id": f"feedback/{feedback}"},
+            output_var="$feedback_result"
+        ),
+        
+        # EMIT: Return final result
+        create_node(
+            node_id="f2",
+            atomic="emit",
+            phase="feedback",
+            node_type="output",
+            description="Emit final result",
+            input_var="$act_result",
+            args={},
+            output_var="$result"
+        )
+    ]
+    
+    edges = [
+        {"from": "s1", "to": "a1"},
+        {"from": "a1", "to": "f1"},
+        {"from": "a1", "to": "f2"},
+        {"from": "f1", "to": "f2"}
+    ]
+    
+    return create_structon(
+        intent=intent,
+        nodes=nodes,
+        edges=edges,
+        structure_id=structure_id or generate_id(),
+        structure_type="composite",
+        tension=0.7,
+        importance=0.7
+    )
+
+
+def compose_custom(
+    components: List[Dict[str, str]],
+    intent: str = None,
+    structure_id: str = None
+) -> Dict[str, Any]:
+    """
+    Compose an agent from arbitrary pool components.
+    
+    Args:
+        components: List of {"pool": "sense", "name": "get_input"} dicts
+        intent: Optional intent description
+        structure_id: Optional ID
+    
+    Returns:
+        Composed agent structon
+    
+    Example:
+        agent = compose_custom([
+            {"pool": "sense", "name": "get_input"},
+            {"pool": "sense", "name": "find_memories"},  # Two sense!
+            {"pool": "act", "name": "summarize_text"},
+            {"pool": "feedback", "name": "learn_from_experience"}
+        ])
+    """
+    nodes = []
+    edges = []
+    prev_node_id = None
+    
+    for i, comp in enumerate(components):
+        pool = comp["pool"]
+        name = comp["name"]
+        
+        # Verify exists
+        load_from_pool(pool, name)
+        
+        # Determine phase from pool
+        phase = pool if pool in ["sense", "act", "feedback"] else "act"
+        
+        node_id = f"{phase[0]}{i+1}"  # s1, a2, f3, etc.
+        
+        node = create_node(
+            node_id=node_id,
+            atomic="run_structon",
+            phase=phase,
+            node_type="process",
+            description=f"Run {pool}/{name}",
+            input_var=f"${prev_node_id}_result" if prev_node_id else None,
+            args={"structon_id": f"{pool}/{name}"},
+            output_var=f"${node_id}_result"
+        )
+        nodes.append(node)
+        
+        if prev_node_id:
+            edges.append({"from": prev_node_id, "to": node_id})
+        
+        prev_node_id = node_id
+    
+    # Add final emit
+    emit_node = create_node(
+        node_id="emit",
+        atomic="emit",
+        phase="feedback",
+        node_type="output",
+        description="Emit final result",
+        input_var=f"${prev_node_id}_result" if prev_node_id else None,
+        args={},
+        output_var="$result"
+    )
+    nodes.append(emit_node)
+    edges.append({"from": prev_node_id, "to": "emit"})
+    
+    # Generate intent
+    if not intent:
+        intent = "Composed: " + " → ".join([f"{c['pool']}/{c['name']}" for c in components])
+    
+    return create_structon(
+        intent=intent,
+        nodes=nodes,
+        edges=edges,
+        structure_id=structure_id or generate_id(),
+        structure_type="composite",
+        tension=0.7,
+        importance=0.7
+    )

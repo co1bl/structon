@@ -647,7 +647,11 @@ def atomic_run_structon(input_data: Any, args: Dict[str, Any], context: Dict[str
             structon_obj = Structon.from_dict(structon)
         else:
             structon_obj = structon
-        return _interpreter.run(structon_obj, child_context)
+        result = _interpreter.run(structon_obj, child_context)
+        # Return just the result value, not the full execution object
+        if isinstance(result, dict) and "result" in result:
+            return result["result"]
+        return result
     else:
         # Fallback: return the structon data
         return {"warning": "No interpreter set", "structon": structon}

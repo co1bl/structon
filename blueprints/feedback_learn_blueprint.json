@@ -1,5 +1,5 @@
 {
-  "structure_id": "feedback_blueprint",
+  "structure_id": "feedback_learn_blueprint",
   "structure_type": "feedback",
   "intent": "INTENT_PLACEHOLDER",
   "description": "INTENT_PLACEHOLDER",
@@ -27,13 +27,14 @@
       "id": "a1",
       "type": "process",
       "phase": "act",
-      "description": "Process",
-      "atomic": "call_llm",
+      "description": "Learn",
+      "atomic": "learn_from_experience",
       "input": "$result",
       "args": {
-        "prompt": "PROMPT_PLACEHOLDER: {result}"
+        "task": "Completed task",
+        "success": true
       },
-      "output": "$feedback"
+      "output": "$memory"
     },
     {
       "id": "f1",
@@ -41,7 +42,7 @@
       "phase": "feedback",
       "description": "Emit",
       "atomic": "emit",
-      "input": "$feedback",
+      "input": "$result",
       "args": {},
       "output": "$output"
     }

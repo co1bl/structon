@@ -1,5 +1,5 @@
 {
-  "structure_id": "feedback_blueprint",
+  "structure_id": "feedback_passthrough_blueprint",
   "structure_type": "feedback",
   "intent": "INTENT_PLACEHOLDER",
   "description": "INTENT_PLACEHOLDER",
@@ -24,24 +24,12 @@
       "output": "$result"
     },
     {
-      "id": "a1",
-      "type": "process",
-      "phase": "act",
-      "description": "Process",
-      "atomic": "call_llm",
-      "input": "$result",
-      "args": {
-        "prompt": "PROMPT_PLACEHOLDER: {result}"
-      },
-      "output": "$feedback"
-    },
-    {
       "id": "f1",
       "type": "output",
       "phase": "feedback",
       "description": "Emit",
       "atomic": "emit",
-      "input": "$feedback",
+      "input": "$result",
       "args": {},
       "output": "$output"
     }
@@ -49,10 +37,6 @@
   "edges": [
     {
       "from": "s1",
-      "to": "a1"
-    },
-    {
-      "from": "a1",
       "to": "f1"
     }
   ]
