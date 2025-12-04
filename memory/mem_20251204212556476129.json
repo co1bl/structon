@@ -1,0 +1,22 @@
+{
+  "id": "mem_20251204212556476129",
+  "intent": "Analyzing successful completion of a task",
+  "content": {
+    "lesson": "Identify the successful approaches and factors that contributed to the task's success to replicate them in future tasks.",
+    "source_task": "Completed task",
+    "source_result": "\\$result",
+    "was_successful": true
+  },
+  "sense_patterns": [
+    "success",
+    "approach",
+    "succeeded",
+    "what worked",
+    "how achieved"
+  ],
+  "tension": 0.8,
+  "success_rate": 0.5,
+  "times_used": 0,
+  "created_at": "2025-12-04T21:25:56.476212",
+  "last_activated": null
+}

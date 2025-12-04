@@ -140,3 +140,17 @@ __all__ = [
     "compose_from_pools",
     "compose_custom",
 ]
+# Evolution
+from .evolution import (
+    auto_select,
+    auto_compose,
+    track_success,
+    get_success_rate,
+    update_tension,
+    evolve_structon,
+    generate_missing,
+    prune_pool,
+    evaluate_result,
+    evolution_step,
+    evolution_loop
+)

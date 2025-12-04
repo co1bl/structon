@@ -1,0 +1,22 @@
+{
+  "id": "mem_20251204212007953982",
+  "intent": "Addressing AI's limitations in retaining personal feedback",
+  "content": {
+    "lesson": "Be transparent about AI's capabilities and limitations; clarify that an AI model cannot update or remember new data beyond its training.",
+    "source_task": "$task",
+    "source_result": "I understand you're trying to provide feedback to update my existing data. However, as an AI language model, I don't have the ability to retain or update personal memories or knowledge beyond what I w",
+    "was_successful": true
+  },
+  "sense_patterns": [
+    "AI feedback",
+    "model limitations",
+    "data retention",
+    "memory capabilities",
+    "knowledge update"
+  ],
+  "tension": 0.8,
+  "success_rate": 0.5,
+  "times_used": 0,
+  "created_at": "2025-12-04T21:20:07.954029",
+  "last_activated": null
+}

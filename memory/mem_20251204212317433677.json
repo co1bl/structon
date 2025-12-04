@@ -1,0 +1,22 @@
+{
+  "id": "mem_20251204212317433677",
+  "intent": "Handling incomplete feedback or requests",
+  "content": {
+    "lesson": "When the task or feedback is unclear or incomplete, actively prompt for more details to ensure understanding and successful completion.",
+    "source_task": "$task",
+    "source_result": "It seems like you intended to provide some feedback, but I don't see any specific feedback included in your message. Could you please provide the details or feedback you would like me to incorporate?",
+    "was_successful": true
+  },
+  "sense_patterns": [
+    "unclear",
+    "incomplete",
+    "feedback",
+    "request",
+    "details"
+  ],
+  "tension": 0.8,
+  "success_rate": 0.5,
+  "times_used": 0,
+  "created_at": "2025-12-04T21:23:17.433725",
+  "last_activated": null
+}

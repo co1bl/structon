@@ -1,0 +1,22 @@
+{
+  "id": "mem_20251204212100727721",
+  "intent": "Capturing the successful approach for task completion",
+  "content": {
+    "lesson": "Identifying the successful strategy and factors that contributed to a positive outcome will help in replicating success in future similar tasks.",
+    "source_task": "Completed task",
+    "source_result": "\\$result",
+    "was_successful": true
+  },
+  "sense_patterns": [
+    "approach",
+    "strategy",
+    "success",
+    "factors",
+    "outcome"
+  ],
+  "tension": 0.8,
+  "success_rate": 0.5,
+  "times_used": 0,
+  "created_at": "2025-12-04T21:21:00.727785",
+  "last_activated": null
+}

@@ -1,0 +1,20 @@
+{
+  "id": "mem_20251204211734570165",
+  "intent": "Handling limitations in tasks related to memory or data storage",
+  "content": {
+    "lesson": "Clearly communicate capabilities and limitations while offering alternatives or assistance.",
+    "source_task": "$task",
+    "source_result": "I'm sorry, but I'm unable to store or update memories or personal data. However, if you have any feedback or questions, feel free to let me know, and I'll do my best to help you based on the informati",
+    "was_successful": true
+  },
+  "sense_patterns": [
+    "unable to store or update memories",
+    "feedback or questions",
+    "based on the information available"
+  ],
+  "tension": 0.8,
+  "success_rate": 0.5,
+  "times_used": 0,
+  "created_at": "2025-12-04T21:17:34.570250",
+  "last_activated": null
+}

@@ -1,0 +1,22 @@
+{
+  "id": "mem_20251204212531252723",
+  "intent": "Requesting specific feedback for better assistance",
+  "content": {
+    "lesson": "Always ask for specific details from the feedback provider to offer targeted support.",
+    "source_task": "$task",
+    "source_result": "It seems like you have mentioned having some feedback to provide, but you've not included the details in your statement. Could you please provide the specific feedback you'd like me to incorporate? Th",
+    "was_successful": true
+  },
+  "sense_patterns": [
+    "feedback",
+    "provide",
+    "details",
+    "specific",
+    "incorporate"
+  ],
+  "tension": 0.8,
+  "success_rate": 0.5,
+  "times_used": 0,
+  "created_at": "2025-12-04T21:25:31.252804",
+  "last_activated": null
+}

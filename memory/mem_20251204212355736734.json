@@ -1,0 +1,20 @@
+{
+  "id": "mem_20251204212355736734",
+  "intent": "Dealing with feedback and limitations",
+  "content": {
+    "lesson": "Understand and communicate the limitations of the system clearly to manage expectations.",
+    "source_task": "$task",
+    "source_result": "I'm sorry, but as a language model, I don't have the ability to update memories or store feedback. However, if you have feedback or questions, feel free to share them, and I can assist with the inform",
+    "was_successful": true
+  },
+  "sense_patterns": [
+    "language model limitations",
+    "providing feedback",
+    "updating memories"
+  ],
+  "tension": 0.8,
+  "success_rate": 0.5,
+  "times_used": 0,
+  "created_at": "2025-12-04T21:23:55.736798",
+  "last_activated": null
+}

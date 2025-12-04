@@ -1,0 +1,22 @@
+{
+  "id": "mem_20251204212231782176",
+  "intent": "Handling unclear user requests",
+  "content": {
+    "lesson": "When faced with an unclear or incomplete input from a user, acknowledge the lack of clarity and request specific details to provide accurate assistance.",
+    "source_task": "$task",
+    "source_result": "I'm sorry, but I can't process that request as you provided \"{feedback}\" as the feedback input. If you have specific information or corrections you'd like me to take into account, please provide the d",
+    "was_successful": true
+  },
+  "sense_patterns": [
+    "unclear input",
+    "incomplete request",
+    "need more information",
+    "clarification required",
+    "insufficient details"
+  ],
+  "tension": 0.8,
+  "success_rate": 0.5,
+  "times_used": 0,
+  "created_at": "2025-12-04T21:22:31.782281",
+  "last_activated": null
+}

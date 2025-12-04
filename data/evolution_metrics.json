@@ -1,0 +1,288 @@
+{
+  "structons": {
+    "sense/find_relevant_memori": {
+      "runs": 6,
+      "total_success": 6.0,
+      "success_rate": 1.0,
+      "last_used": "2025-12-04T21:27:31.175380"
+    },
+    "act/summarize_text": {
+      "runs": 5,
+      "total_success": 4.3,
+      "success_rate": 0.86,
+      "last_used": "2025-12-04T21:28:30.340895"
+    },
+    "feedback/update_memories_based_on_": {
+      "runs": 3,
+      "total_success": 2.3,
+      "success_rate": 0.7666666666666666,
+      "last_used": "2025-12-04T21:26:03.848817"
+    },
+    "act/analyze_content": {
+      "runs": 5,
+      "total_success": 4.3,
+      "success_rate": 0.86,
+      "last_used": "2025-12-04T21:28:52.300490"
+    },
+    "act/generate_response": {
+      "runs": 2,
+      "total_success": 2.0,
+      "success_rate": 1.0,
+      "last_used": "2025-12-04T21:27:31.177008"
+    },
+    "feedback/evaluate_quality": {
+      "runs": 8,
+      "total_success": 8.0,
+      "success_rate": 1.0,
+      "last_used": "2025-12-04T21:28:52.301912"
+    },
+    "sense/find_memories": {
+      "runs": 1,
+      "total_success": 0.3,
+      "success_rate": 0.3,
+      "last_used": "2025-12-04T21:25:56.477959"
+    },
+    "feedback/learn_from_experience": {
+      "runs": 1,
+      "total_success": 0.3,
+      "success_rate": 0.3,
+      "last_used": "2025-12-04T21:25:56.480649"
+    },
+    "sense/parse_input": {
+      "runs": 1,
+      "total_success": 0.3,
+      "success_rate": 0.3,
+      "last_used": "2025-12-04T21:26:03.846073"
+    },
+    "sense/find_memories_v2": {
+      "runs": 3,
+      "total_success": 3.0,
+      "success_rate": 1.0,
+      "last_used": "2025-12-04T21:28:52.299036"
+    },
+    "sense/parse_input_v2": {
+      "runs": 1,
+      "total_success": 1.0,
+      "success_rate": 1.0,
+      "last_used": "2025-12-04T21:28:15.330115"
+    }
+  },
+  "history": [
+    {
+      "structon_id": "sense/find_relevant_memori",
+      "task": "Summarize this text",
+      "success": 1.0,
+      "timestamp": "2025-12-04T21:25:17.693876"
+    },
+    {
+      "structon_id": "act/summarize_text",
+      "task": "Summarize this text",
+      "success": 1.0,
+      "timestamp": "2025-12-04T21:25:17.695305"
+    },
+    {
+      "structon_id": "feedback/update_memories_based_on_",
+      "task": "Summarize this text",
+      "success": 1.0,
+      "timestamp": "2025-12-04T21:25:17.696156"
+    },
+    {
+      "structon_id": "sense/find_relevant_memori",
+      "task": "Analyze this content",
+      "success": 1.0,
+      "timestamp": "2025-12-04T21:25:31.254715"
+    },
+    {
+      "structon_id": "act/analyze_content",
+      "task": "Analyze this content",
+      "success": 1.0,
+      "timestamp": "2025-12-04T21:25:31.255626"
+    },
+    {
+      "structon_id": "feedback/update_memories_based_on_",
+      "task": "Analyze this content",
+      "success": 1.0,
+      "timestamp": "2025-12-04T21:25:31.256882"
+    },
+    {
+      "structon_id": "sense/find_relevant_memori",
+      "task": "Generate a response",
+      "success": 1.0,
+      "timestamp": "2025-12-04T21:25:53.599998"
+    },
+    {
+      "structon_id": "act/generate_response",
+      "task": "Generate a response",
+      "success": 1.0,
+      "timestamp": "2025-12-04T21:25:53.602221"
+    },
+    {
+      "structon_id": "feedback/evaluate_quality",
+      "task": "Generate a response",
+      "success": 1.0,
+      "timestamp": "2025-12-04T21:25:53.603022"
+    },
+    {
+      "structon_id": "sense/find_memories",
+      "task": "Summarize and remember",
+      "success": 0.3,
+      "timestamp": "2025-12-04T21:25:56.477965"
+    },
+    {
+      "structon_id": "act/summarize_text",
+      "task": "Summarize and remember",
+      "success": 0.3,
+      "timestamp": "2025-12-04T21:25:56.479655"
+    },
+    {
+      "structon_id": "feedback/learn_from_experience",
+      "task": "Summarize and remember",
+      "success": 0.3,
+      "timestamp": "2025-12-04T21:25:56.480654"
+    },
+    {
+      "structon_id": "sense/parse_input",
+      "task": "Parse and analyze input",
+      "success": 0.3,
+      "timestamp": "2025-12-04T21:26:03.846080"
+    },
+    {
+      "structon_id": "act/analyze_content",
+      "task": "Parse and analyze input",
+      "success": 0.3,
+      "timestamp": "2025-12-04T21:26:03.848001"
+    },
+    {
+      "structon_id": "feedback/update_memories_based_on_",
+      "task": "Parse and analyze input",
+      "success": 0.3,
+      "timestamp": "2025-12-04T21:26:03.848821"
+    },
+    {
+      "structon_id": "sense/find_relevant_memori",
+      "task": "Summarize this text",
+      "success": 1.0,
+      "timestamp": "2025-12-04T21:26:23.308322"
+    },
+    {
+      "structon_id": "act/summarize_text",
+      "task": "Summarize this text",
+      "success": 1.0,
+      "timestamp": "2025-12-04T21:26:23.310103"
+    },
+    {
+      "structon_id": "feedback/evaluate_quality",
+      "task": "Summarize this text",
+      "success": 1.0,
+      "timestamp": "2025-12-04T21:26:23.311048"
+    },
+    {
+      "structon_id": "sense/find_relevant_memori",
+      "task": "Analyze this content",
+      "success": 1.0,
+      "timestamp": "2025-12-04T21:27:00.981740"
+    },
+    {
+      "structon_id": "act/analyze_content",
+      "task": "Analyze this content",
+      "success": 1.0,
+      "timestamp": "2025-12-04T21:27:00.984756"
+    },
+    {
+      "structon_id": "feedback/evaluate_quality",
+      "task": "Analyze this content",
+      "success": 1.0,
+      "timestamp": "2025-12-04T21:27:00.986050"
+    },
+    {
+      "structon_id": "sense/find_relevant_memori",
+      "task": "Generate a response",
+      "success": 1.0,
+      "timestamp": "2025-12-04T21:27:31.175399"
+    },
+    {
+      "structon_id": "act/generate_response",
+      "task": "Generate a response",
+      "success": 1.0,
+      "timestamp": "2025-12-04T21:27:31.177013"
+    },
+    {
+      "structon_id": "feedback/evaluate_quality",
+      "task": "Generate a response",
+      "success": 1.0,
+      "timestamp": "2025-12-04T21:27:31.178093"
+    },
+    {
+      "structon_id": "sense/find_memories_v2",
+      "task": "Summarize and remember",
+      "success": 1.0,
+      "timestamp": "2025-12-04T21:27:50.249299"
+    },
+    {
+      "structon_id": "act/summarize_text",
+      "task": "Summarize and remember",
+      "success": 1.0,
+      "timestamp": "2025-12-04T21:27:50.251039"
+    },
+    {
+      "structon_id": "feedback/evaluate_quality",
+      "task": "Summarize and remember",
+      "success": 1.0,
+      "timestamp": "2025-12-04T21:27:50.252004"
+    },
+    {
+      "structon_id": "sense/parse_input_v2",
+      "task": "Parse and analyze input",
+      "success": 1.0,
+      "timestamp": "2025-12-04T21:28:15.330130"
+    },
+    {
+      "structon_id": "act/analyze_content",
+      "task": "Parse and analyze input",
+      "success": 1.0,
+      "timestamp": "2025-12-04T21:28:15.331490"
+    },
+    {
+      "structon_id": "feedback/evaluate_quality",
+      "task": "Parse and analyze input",
+      "success": 1.0,
+      "timestamp": "2025-12-04T21:28:15.332203"
+    },
+    {
+      "structon_id": "sense/find_memories_v2",
+      "task": "Summarize this text",
+      "success": 1.0,
+      "timestamp": "2025-12-04T21:28:30.338899"
+    },
+    {
+      "structon_id": "act/summarize_text",
+      "task": "Summarize this text",
+      "success": 1.0,
+      "timestamp": "2025-12-04T21:28:30.340905"
+    },
+    {
+      "structon_id": "feedback/evaluate_quality",
+      "task": "Summarize this text",
+      "success": 1.0,
+      "timestamp": "2025-12-04T21:28:30.342208"
+    },
+    {
+      "structon_id": "sense/find_memories_v2",
+      "task": "Analyze this content",
+      "success": 1.0,
+      "timestamp": "2025-12-04T21:28:52.299051"
+    },
+    {
+      "structon_id": "act/analyze_content",
+      "task": "Analyze this content",
+      "success": 1.0,
+      "timestamp": "2025-12-04T21:28:52.300495"
+    },
+    {
+      "structon_id": "feedback/evaluate_quality",
+      "task": "Analyze this content",
+      "success": 1.0,
+      "timestamp": "2025-12-04T21:28:52.301916"
+    }
+  ]
+}
