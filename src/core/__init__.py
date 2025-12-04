@@ -6,6 +6,7 @@ Contains the fundamental components:
 - Atomics: Primitive operations
 - Interpreter: Execution engine
 - Tension: Drive force management
+- Memory: Living memory system
 """
 
 from .schema import (
@@ -42,6 +43,11 @@ from .tension import (
     TensionManager
 )
 
+from .memory import (
+    MemoryStructon,
+    LivingMemory
+)
+
 __all__ = [
     # Schema
     "Structon",
@@ -72,4 +78,8 @@ __all__ = [
     "update_all_tensions",
     "TensionConfig",
     "TensionManager",
+    
+    # Memory
+    "MemoryStructon",
+    "LivingMemory",
 ]
