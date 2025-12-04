@@ -11,7 +11,7 @@ import pytest
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 
 from core import (
-    Structon, Node, Edge, Phase, NodeType, NodeState,
+    Structon, Node, Edge, Phase, NodeType, NodeState, StructonType,
     Interpreter, calculate_tension
 )
 
@@ -21,13 +21,26 @@ class TestStructon:
     
     def test_create_structon(self):
         """Test basic structon creation."""
-        s = Structon.create("test_intent")
+        s = Structon(
+            structure_id="test_001",
+            structure_type=StructonType.COMPOSITE,
+            intent="test_intent",
+            phases=[Phase.SENSE, Phase.ACT, Phase.FEEDBACK],
+            tension=0.5,
+            importance=0.5,
+            nodes=[Node(
+                id="n1",
+                type=NodeType.INPUT,
+                phase=Phase.SENSE,
+                description="test",
+                atomic="get"
+            )],
+            edges=[]
+        )
         
-        assert s.structure_id is not None
+        assert s.structure_id == "test_001"
         assert s.intent == "test_intent"
         assert Phase.SENSE in s.phases
-        assert Phase.ACT in s.phases
-        assert Phase.FEEDBACK in s.phases
     
     def test_structon_validation(self):
         """Test structon validation."""
@@ -65,15 +78,23 @@ class TestStructon:
     
     def test_add_node(self):
         """Test adding nodes."""
-        s = Structon.create("test")
-        node = Node(
-            id="n1",
-            type=NodeType.INPUT,
-            phase=Phase.SENSE,
-            description="test node",
-            atomic="get"
+        s = Structon(
+            structure_id="test_002",
+            structure_type=StructonType.COMPOSITE,
+            intent="test",
+            phases=[Phase.SENSE],
+            tension=0.5,
+            importance=0.5,
+            nodes=[Node(
+                id="n1",
+                type=NodeType.INPUT,
+                phase=Phase.SENSE,
+                description="initial",
+                atomic="get"
+            )],
+            edges=[]
         )
-        s.nodes.append(node)
+        
         s.add_node(Node(
             id="n2",
             type=NodeType.OUTPUT,
@@ -83,17 +104,26 @@ class TestStructon:
         ))
         
         assert len(s.nodes) == 2
+
     
     def test_to_dict_and_back(self):
         """Test serialization."""
-        s = Structon.create("serialize_test")
-        s.nodes.append(Node(
-            id="n1",
-            type=NodeType.INPUT,
-            phase=Phase.SENSE,
-            description="test",
-            atomic="get"
-        ))
+        s = Structon(
+            structure_id="test_003",
+            structure_type=StructonType.COMPOSITE,
+            intent="serialize_test",
+            phases=[Phase.SENSE],
+            tension=0.5,
+            importance=0.5,
+            nodes=[Node(
+                id="n1",
+                type=NodeType.INPUT,
+                phase=Phase.SENSE,
+                description="test",
+                atomic="get"
+            )],
+            edges=[]
+        )
         
         d = s.to_dict()
         s2 = Structon.from_dict(d)
