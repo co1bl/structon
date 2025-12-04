@@ -1,153 +1,138 @@
 # Structon
 
-> The atom of cognition — a self-similar sense-act-feedback loop that nests infinitely, driven by tension, evolved by LLM.
+**The atom of cognition. Sense. Act. Feedback. Repeat.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 
-## What Is Structon?
+---
 
-Structon is a cognitive architecture that gives LLMs:
+## What is Structon?
 
-- **Memory** — persistent across sessions
-- **Goals** — tension drives action  
-- **Learning** — feedback enables evolution
-- **Continuity** — mental state snapshots
-
-## Core Idea
+Structon is a **self-improving cognitive architecture** that transforms LLMs from passive responders into autonomous, goal-directed agents.
 
 ```
-One pattern. Infinite complexity.
-
-STRUCTON = {
-    sense,      // perceive state
-    act,        // take action
-    feedback    // learn from result
-}
-
-Each phase can contain other structons.
-Self-similar at every scale.
-Complexity emerges from simplicity.
+┌─────────────────────────────────────────┐
+│            STRUCTON                     │
+├─────────────────────────────────────────┤
+│  SENSE    →  Perceive current state     │
+│  ACT      →  Do something about it      │
+│  FEEDBACK →  Learn from the result      │
+└─────────────────────────────────────────┘
 ```
 
-## The Problem
+## Key Results
 
-| LLM Alone | Problem |
-|-----------|---------|
-| Stateless | Forgets everything between calls |
-| Passive | No goals, no drive |
-| Can't learn | Same mistakes repeated |
-| Limited depth | Context window bounds reasoning |
+We demonstrated **autonomous self-improvement** in 3 iterations:
 
-## The Solution
+```
+v1: [█████░░░░░]  5/10 — Basic response
+v2: [████████░░]  8/10 — After 1st evolution  
+v3: [██████████] 10/10 — After 2nd evolution
 
-| LLM + Structon | Solution |
-|----------------|----------|
-| Persistent memory | Structons are saved and loaded |
-| Goal-driven | Tension prioritizes what to do |
-| Learns | Feedback evolves structons |
-| Unlimited depth | Infinite nesting |
+🎉 System improved itself from 5/10 to 10/10
+   with NO human intervention
+```
+
+## Core Concepts
+
+| Concept | Description |
+|---------|-------------|
+| **Sense-Act-Feedback** | Universal cognitive loop at every scale |
+| **Code is Data** | LLMs generate executable JSON structons |
+| **Tension** | Intrinsic drive (0.0-1.0) that motivates action |
+| **Self-Similarity** | Same pattern works at system, structon, and node level |
 
 ## Quick Start
 
-```python
-from structon import Structon, Interpreter
+```bash
+# Clone
+git clone https://github.com/co1bl/structon.git
+cd structon
 
-# Load a structon
-s = Structon.load("my_task.json")
+# Setup
+uv venv && source .venv/bin/activate
+uv pip install -r requirements.txt
 
-# Run the sense-act-feedback loop
-interpreter = Interpreter()
-result = interpreter.run(s)
+# Set API key
+export OPENAI_API_KEY="your-key"
 
-# Structon evolves based on feedback
-print(f"Result: {result}")
-print(f"New tension: {s.tension}")
+# Run examples
+python examples/hello_world.py
+python examples/reasoning_loop.py --simple
+python examples/code_is_data.py
+python examples/self_improvement.py
 ```
 
-## The Four Rules
+## Experiments Proven
 
-1. **Every structon has: sense → act → feedback**
-2. **Every structon can contain structons**
-3. **Tension drives what gets processed**
-4. **Feedback triggers evolution via LLM**
+| Experiment | Result |
+|------------|--------|
+| Basic Execution | ✅ Sense-act-feedback works |
+| Code is Data | ✅ LLM generates executable structons |
+| Evolution | ✅ Feedback improves output (6→9) |
+| Autonomous Loop | ✅ Self-improvement (5→10) |
 
 ## Architecture
 
 ```
-Blueprint (template)
-    │
-    ▼
-LLM (generates structons)
-    │
-    ▼
-Structon (sense → act → feedback)
-    │
-    ▼
-Atomic Functions (execute)
-    │
-    ▼
-Feedback → LLM → Evolved Structon
+Intelligence (LLM) + Agency (Structon) = Autonomous Agent
+
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│   Schema    │────▶│ Interpreter │◀───▶│  LLM Layer  │
+│   (JSON)    │     │  (Execute)  │     │  (OpenAI)   │
+└─────────────┘     └─────────────┘     └─────────────┘
 ```
 
-## Self-Similarity (Fractal)
+## The Four Rules
 
-```
-SYSTEM:     sense → act → feedback
-               │
-STRUCTON:   sense → act → feedback
-               │
-NODE:       sense → act → feedback
-               │
-ATOMIC:     input → compute → output
-
-Same pattern at every level.
-Infinite nesting, same rules.
-```
-
-## Tension
-
-Tension (0.0 to 1.0) is the drive force:
-
-- **High tension** = unresolved, urgent, needs attention
-- **Low tension** = resolved, complete, can wait
-
-```python
-tension = (
-    importance × 0.3 +
-    urgency × 0.3 +
-    unresolved × 0.2 +
-    blocking × 0.2
-)
-```
-
-## Documentation
-
-- [Concept](docs/concept.md) — The full idea and vision
-- [Architecture](docs/architecture.md) — Technical design
-- [Tutorial](docs/tutorial.md) — Getting started guide
-- [Examples](docs/examples/) — Example structons
+1. **Everything is a structon** — Tasks, knowledge, feedback, self-model
+2. **Structons contain structons** — Infinite nesting, same rules
+3. **Tension drives action** — Always work on highest-tension item
+4. **Feedback evolves structure** — Results improve the structon
 
 ## Project Structure
 
 ```
 structon/
 ├── src/
-│   ├── core/           # Schema, interpreter, tension
-│   ├── llm/            # LLM integration
-│   └── pools/          # Sense, act, feedback pools
-├── blueprints/         # Structon templates
-├── examples/           # Example code
-└── tests/              # Test suite
+│   ├── core/           # Schema, interpreter, atomics, tension
+│   └── llm/            # LLM integration, generator, evolver
+├── examples/           # Working demos
+├── tests/              # Unit tests
+├── docs/               # Documentation
+│   └── RESEARCH.md     # Full research paper
+└── blueprints/         # Structon templates
 ```
 
-## Installation
+## Documentation
 
-```bash
-git clone https://github.com/ImagineTask/structon.git
-cd structon
-pip install -r requirements.txt
-```
+- [**RESEARCH.md**](docs/RESEARCH.md) — Full research paper with experiments
+- [**concept.md**](docs/concept.md) — Core concepts explained
+- [**architecture.md**](docs/architecture.md) — Technical architecture
+- [**tutorial.md**](docs/tutorial.md) — Getting started guide
+
+## Why This Matters
+
+LLMs are intelligent but passive. Structon adds:
+
+| LLM Alone | + Structon |
+|-----------|------------|
+| Responds | Pursues goals |
+| Stateless | Persistent memory |
+| Fixed | Self-improving |
+| Tool | Agent |
+
+## Roadmap
+
+- [x] Core architecture
+- [x] LLM integration
+- [x] Prove code-is-data
+- [x] Prove self-improvement
+- [ ] Pure structon evolution loop
+- [ ] Persistence layer
+- [ ] Research agent demo
+- [ ] Multi-agent coordination
 
 ## Contributing
 
@@ -155,19 +140,10 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ## License
 
-MIT License — Copyright (c) 2024 ImagineTask
-
-## The Vision
-
-> Structon is not just a framework. It's a format for machine thought.
-> 
-> DNA has 4 letters → all life.
-> Structon has 3 phases → all cognition.
->
-> sense → act → feedback (can nest infinitely)
->
-> Simple. Complete. Powerful.
+MIT — See [LICENSE](LICENSE)
 
 ---
 
-**Built by [ImagineTask](https://github.com/ImagineTask)**
+*"One pattern. Infinite complexity."*
+
+**ImagineTask** — December 2024
