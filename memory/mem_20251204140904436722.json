@@ -1,0 +1,22 @@
+{
+  "id": "mem_20251204140904436722",
+  "intent": "Using a structured approach to complete tasks successfully",
+  "content": {
+    "lesson": "A structured approach with clear objectives and defined steps leads to successful task completion.",
+    "source_task": "$task",
+    "source_result": "$result",
+    "was_successful": "$success"
+  },
+  "sense_patterns": [
+    "structured",
+    "approach",
+    "clear objectives",
+    "defined steps",
+    "successful task completion"
+  ],
+  "tension": 0.8,
+  "success_rate": 0.5,
+  "times_used": 0,
+  "created_at": "2025-12-04T14:09:04.436821",
+  "last_activated": null
+}

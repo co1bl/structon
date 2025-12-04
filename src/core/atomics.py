@@ -1,13 +1,24 @@
 """
 Atomic Functions Module
 
-The ~25 primitive operations that bridge structons to real computation.
+The ~35 primitive operations that bridge structons to real computation.
 These are the ONLY real code in the system. Everything else is data.
+
+Categories:
+- Data Operations
+- Control Flow
+- Structon Operations
+- Memory Operations (NEW)
+- Meta Operations (NEW)
+- LLM Operations
+- I/O Operations
+- Tension Operations
 """
 
 from typing import Any, Dict, List, Callable, Optional
 import json
 import os
+from datetime import datetime
 
 
 class AtomicRegistry:
@@ -55,6 +66,17 @@ class AtomicRegistry:
         self.register("query_structons", atomic_query_structons)
         self.register("create_structon", atomic_create_structon)
         self.register("update_structon", atomic_update_structon)
+        
+        # Memory Operations (NEW)
+        self.register("load_memories", atomic_load_memories)
+        self.register("sense_memories", atomic_sense_memories)
+        self.register("activate_memories", atomic_activate_memories)
+        self.register("create_memory", atomic_create_memory)
+        self.register("update_memory", atomic_update_memory)
+        self.register("learn_from_experience", atomic_learn_from_experience)
+        
+        # Meta Operations (NEW)
+        self.register("run_structon", atomic_run_structon)
         
         # LLM Operations
         self.register("call_llm", atomic_call_llm)
@@ -193,12 +215,18 @@ def atomic_if(input_data: Any, args: Dict[str, Any], context: Dict[str, Any]) ->
     then_value = args.get("then", True)
     else_value = args.get("else", False)
     
-    # Simple condition evaluation
+    # Evaluate various condition types
     if condition == "success < 0.5":
         success = input_data.get("success", 1.0) if isinstance(input_data, dict) else 1.0
         return then_value if success < 0.5 else else_value
     elif condition == "result != null":
         return then_value if input_data is not None else else_value
+    elif condition == "score >= target":
+        score = input_data.get("score", 0) if isinstance(input_data, dict) else 0
+        target = args.get("target", 8)
+        return then_value if score >= target else else_value
+    elif condition == "has_memories":
+        return then_value if input_data and len(input_data) > 0 else else_value
     
     # Default: truthy check
     return then_value if input_data else else_value
@@ -234,8 +262,9 @@ STRUCTON_STORAGE_PATH = "./structons"
 def atomic_load_structon(input_data: Any, args: Dict[str, Any], context: Dict[str, Any]) -> Dict:
     """Load a structon from storage."""
     structon_id = args.get("id") or input_data
+    storage_path = args.get("storage_path", STRUCTON_STORAGE_PATH)
     
-    filepath = os.path.join(STRUCTON_STORAGE_PATH, f"{structon_id}.json")
+    filepath = os.path.join(storage_path, f"{structon_id}.json")
     
     if os.path.exists(filepath):
         with open(filepath, 'r') as f:
@@ -246,10 +275,11 @@ def atomic_load_structon(input_data: Any, args: Dict[str, Any], context: Dict[st
 
 def atomic_save_structon(input_data: Any, args: Dict[str, Any], context: Dict[str, Any]) -> Dict:
     """Save a structon to storage."""
-    os.makedirs(STRUCTON_STORAGE_PATH, exist_ok=True)
+    storage_path = args.get("storage_path", STRUCTON_STORAGE_PATH)
+    os.makedirs(storage_path, exist_ok=True)
     
     if isinstance(input_data, dict) and "structure_id" in input_data:
-        filepath = os.path.join(STRUCTON_STORAGE_PATH, f"{input_data['structure_id']}.json")
+        filepath = os.path.join(storage_path, f"{input_data['structure_id']}.json")
         with open(filepath, 'w') as f:
             json.dump(input_data, f, indent=2)
         return {"saved": True, "path": filepath}
@@ -259,9 +289,10 @@ def atomic_save_structon(input_data: Any, args: Dict[str, Any], context: Dict[st
 
 def atomic_query_structons(input_data: Any, args: Dict[str, Any], context: Dict[str, Any]) -> List[Dict]:
     """Query structons from storage."""
+    storage_path = args.get("storage_path", STRUCTON_STORAGE_PATH)
     results = []
     
-    if not os.path.exists(STRUCTON_STORAGE_PATH):
+    if not os.path.exists(storage_path):
         return results
     
     status = args.get("status")
@@ -269,9 +300,9 @@ def atomic_query_structons(input_data: Any, args: Dict[str, Any], context: Dict[
     get_all = args.get("all", False)
     limit = args.get("limit", 100)
     
-    for filename in os.listdir(STRUCTON_STORAGE_PATH):
+    for filename in os.listdir(storage_path):
         if filename.endswith(".json"):
-            filepath = os.path.join(STRUCTON_STORAGE_PATH, filename)
+            filepath = os.path.join(storage_path, filename)
             with open(filepath, 'r') as f:
                 structon = json.load(f)
             
@@ -321,98 +352,391 @@ def atomic_update_structon(input_data: Any, args: Dict[str, Any], context: Dict[
 
 
 # =============================================================================
+# Memory Operations (NEW - for code-is-data)
+# =============================================================================
+
+MEMORY_DIR = "./memory"
+
+
+def atomic_load_memories(input_data: Any, args: Dict[str, Any], context: Dict[str, Any]) -> List[Dict]:
+    """Load all memories from disk."""
+    memory_dir = args.get("memory_dir", MEMORY_DIR)
+    os.makedirs(memory_dir, exist_ok=True)
+    
+    memories = []
+    for filename in os.listdir(memory_dir):
+        if filename.endswith('.json'):
+            filepath = os.path.join(memory_dir, filename)
+            try:
+                with open(filepath, 'r') as f:
+                    memories.append(json.load(f))
+            except Exception as e:
+                print(f"[Memory] Failed to load {filename}: {e}")
+    
+    return memories
+
+
+def atomic_sense_memories(input_data: Any, args: Dict[str, Any], context: Dict[str, Any]) -> List[Dict]:
+    """
+    Calculate relevance of memories to context.
+    
+    This is the SENSE phase for memories.
+    """
+    memories = args.get("memories", [])
+    if not memories and isinstance(input_data, list):
+        memories = input_data
+        ctx = args.get("context", "")
+    else:
+        ctx = str(input_data)
+    
+    if not memories:
+        return []
+    
+    # First try pattern matching (fast path)
+    for memory in memories:
+        memory["activation"] = 0.0
+        patterns = memory.get("sense_patterns", [])
+        ctx_lower = ctx.lower()
+        
+        for pattern in patterns:
+            if pattern.lower() in ctx_lower:
+                memory["activation"] = memory.get("tension", 0.5) * 0.9
+                break
+    
+    # For memories without pattern match, use LLM
+    unmatched = [m for m in memories if m.get("activation", 0) == 0]
+    
+    if unmatched:
+        memory_intents = {str(i): m.get("intent", "") for i, m in enumerate(unmatched)}
+        
+        prompt = f"""Rate each memory's relevance (0.0-1.0) to this context.
+Return JSON only: {{"0": 0.5, "1": 0.8, ...}}
+
+Context: {ctx}
+
+Memories:
+{json.dumps(memory_intents, indent=2)}"""
+        
+        response = atomic_call_llm(prompt, {"prompt": "{input}"}, context)
+        
+        try:
+            start = response.find("{")
+            end = response.rfind("}") + 1
+            relevances = json.loads(response[start:end])
+            
+            for i, memory in enumerate(unmatched):
+                relevance = float(relevances.get(str(i), 0.1))
+                relevance = max(0.0, min(1.0, relevance))
+                memory["activation"] = memory.get("tension", 0.5) * relevance
+        except:
+            for memory in unmatched:
+                memory["activation"] = memory.get("tension", 0.5) * 0.1
+    
+    return memories
+
+
+def atomic_activate_memories(input_data: Any, args: Dict[str, Any], context: Dict[str, Any]) -> List[Dict]:
+    """
+    Get top-k activated memories.
+    
+    This is the ACT phase for memories.
+    """
+    memories = input_data if isinstance(input_data, list) else []
+    top_k = args.get("top_k", 3)
+    threshold = args.get("threshold", 0.0)
+    
+    # Filter and sort by activation
+    qualified = [m for m in memories if m.get("activation", 0) > threshold]
+    sorted_memories = sorted(qualified, key=lambda m: m.get("activation", 0), reverse=True)
+    
+    # Activate top-k
+    activated = sorted_memories[:top_k]
+    for memory in activated:
+        memory["times_used"] = memory.get("times_used", 0) + 1
+        memory["last_activated"] = datetime.now().isoformat()
+    
+    return activated
+
+
+def atomic_create_memory(input_data: Any, args: Dict[str, Any], context: Dict[str, Any]) -> Dict:
+    """
+    Create a new memory.
+    
+    This is part of the FEEDBACK phase.
+    """
+    memory_dir = args.get("memory_dir", MEMORY_DIR)
+    
+    memory = {
+        "id": f"mem_{datetime.now().strftime('%Y%m%d%H%M%S%f')}",
+        "intent": args.get("intent", str(input_data)[:50] if input_data else "new_memory"),
+        "content": args.get("content", {"data": input_data}),
+        "sense_patterns": args.get("patterns", []),
+        "tension": args.get("tension", 0.8),
+        "success_rate": 0.5,
+        "times_used": 0,
+        "created_at": datetime.now().isoformat(),
+        "last_activated": None
+    }
+    
+    # Save to disk
+    os.makedirs(memory_dir, exist_ok=True)
+    filepath = os.path.join(memory_dir, f"{memory['id']}.json")
+    with open(filepath, 'w') as f:
+        json.dump(memory, f, indent=2)
+    
+    return memory
+
+
+def atomic_update_memory(input_data: Any, args: Dict[str, Any], context: Dict[str, Any]) -> Dict:
+    """
+    Update memory based on feedback.
+    
+    This is the FEEDBACK phase for memories.
+    """
+    memory = input_data if isinstance(input_data, dict) else {}
+    success = args.get("success", True)
+    memory_dir = args.get("memory_dir", MEMORY_DIR)
+    
+    if not memory.get("id"):
+        return memory
+    
+    # Update stats based on feedback
+    if success:
+        memory["tension"] = max(0.05, memory.get("tension", 0.5) * 0.9)
+        memory["success_rate"] = memory.get("success_rate", 0.5) * 0.8 + 0.2
+    else:
+        memory["tension"] = min(1.0, memory.get("tension", 0.5) * 1.15)
+        memory["success_rate"] = memory.get("success_rate", 0.5) * 0.8
+    
+    # Save updated memory
+    filepath = os.path.join(memory_dir, f"{memory['id']}.json")
+    with open(filepath, 'w') as f:
+        json.dump(memory, f, indent=2)
+    
+    return memory
+
+
+def atomic_learn_from_experience(input_data: Any, args: Dict[str, Any], context: Dict[str, Any]) -> Optional[Dict]:
+    """
+    Extract and save learning from experience.
+    
+    This is the meta-FEEDBACK: learning new knowledge from tasks.
+    """
+    task = args.get("task", "")
+    result = args.get("result", str(input_data))
+    success = args.get("success", True)
+    memory_dir = args.get("memory_dir", MEMORY_DIR)
+    
+    success_str = "succeeded" if success else "failed"
+    
+    prompt = f"""You completed a task. Extract a reusable lesson for future similar tasks.
+
+TASK: {task}
+RESULT: {result}
+OUTCOME: {success_str}
+
+Think about:
+- What approach was used?
+- What made it work (or fail)?
+- When would this lesson apply again?
+
+Return a JSON object with these exact fields:
+{{
+  "intent": "A brief description of what this lesson is about",
+  "lesson": "The key insight to remember",
+  "patterns": ["trigger", "words", "for", "this", "memory"]
+}}
+
+Return ONLY the JSON object, no other text."""
+
+    response = atomic_call_llm(prompt, {"prompt": "{input}"}, context)
+    
+    try:
+        start = response.find("{")
+        end = response.rfind("}") + 1
+        
+        if start == -1 or end == 0:
+            return None
+        
+        learning = json.loads(response[start:end])
+        
+        # Validate and create memory
+        intent = learning.get("intent", "").strip()
+        lesson = learning.get("lesson", "").strip()
+        patterns = learning.get("patterns", [])
+        
+        if not intent:
+            intent = f"Lesson from: {task[:50]}"
+        
+        if not lesson:
+            lesson = f"Task {success_str}: {result[:100]}"
+        
+        if isinstance(patterns, str):
+            patterns = [p.strip() for p in patterns.split(",")]
+        
+        memory = atomic_create_memory(None, {
+            "intent": intent,
+            "content": {
+                "lesson": lesson,
+                "source_task": task,
+                "source_result": result[:200],
+                "was_successful": success
+            },
+            "patterns": patterns,
+            "memory_dir": memory_dir
+        }, context)
+        
+        return memory
+        
+    except Exception as e:
+        print(f"[Memory] Learning failed: {e}")
+        return None
+
+
+# =============================================================================
+# Meta Operations (NEW - structons running structons)
+# =============================================================================
+
+# Reference to interpreter - will be set by interpreter module
+_interpreter = None
+
+
+def set_interpreter(interpreter):
+    """Set the interpreter reference for meta operations."""
+    global _interpreter
+    _interpreter = interpreter
+
+
+def atomic_run_structon(input_data: Any, args: Dict[str, Any], context: Dict[str, Any]) -> Any:
+    """
+    Run another structon from within a structon.
+    
+    This enables:
+    - Composition: Structons calling structons
+    - Recursion: Structons calling themselves
+    - Meta-cognition: Structons about structons
+    
+    TRUE CODE-IS-DATA: A structon can load and run any other structon.
+    """
+    global _interpreter
+    
+    structon_id = args.get("structon_id")
+    structon_data = args.get("structon")  # Can pass structon directly
+    storage_path = args.get("storage_path", STRUCTON_STORAGE_PATH)
+    
+    # Get the structon to run
+    if structon_data:
+        structon = structon_data
+    elif structon_id:
+        structon = atomic_load_structon(None, {"id": structon_id, "storage_path": storage_path}, context)
+        if "error" in structon:
+            return {"error": f"Could not load structon: {structon_id}"}
+    else:
+        return {"error": "No structon specified"}
+    
+    # Prepare input for child structon
+    child_context = dict(context)  # Copy parent context
+    if input_data:
+        child_context["input"] = input_data
+    
+    # Run the structon
+    if _interpreter:
+        # Use the real interpreter
+        from .schema import Structon
+        if isinstance(structon, dict):
+            structon_obj = Structon.from_dict(structon)
+        else:
+            structon_obj = structon
+        return _interpreter.run(structon_obj, child_context)
+    else:
+        # Fallback: return the structon data
+        return {"warning": "No interpreter set", "structon": structon}
+
+
+# =============================================================================
 # LLM Operations
 # =============================================================================
 
-# LLM Provider - initialized on first use
-_LLM_PROVIDER = None
-_LLM_PROVIDER_INITIALIZED = False
-
-
-def _get_llm_provider():
-    """Get or create LLM provider based on environment."""
-    global _LLM_PROVIDER, _LLM_PROVIDER_INITIALIZED
-    
-    if _LLM_PROVIDER_INITIALIZED:
-        return _LLM_PROVIDER
-    
-    _LLM_PROVIDER_INITIALIZED = True
-    
-    # Try OpenAI first
-    if os.environ.get("OPENAI_API_KEY"):
-        try:
-            import openai
-            _LLM_PROVIDER = OpenAILLM()
-            print("[LLM] Using OpenAI provider")
-            return _LLM_PROVIDER
-        except ImportError:
-            print("[LLM] OpenAI key found but 'openai' package not installed")
-    
-    # Try Anthropic
-    if os.environ.get("ANTHROPIC_API_KEY"):
-        try:
-            import anthropic
-            _LLM_PROVIDER = AnthropicLLM()
-            print("[LLM] Using Anthropic provider")
-            return _LLM_PROVIDER
-        except ImportError:
-            print("[LLM] Anthropic key found but 'anthropic' package not installed")
-    
-    print("[LLM] No API key found. Using mock provider.")
-    return None
-
-
+# LLM Provider classes
 class OpenAILLM:
-    """OpenAI LLM wrapper."""
+    """OpenAI LLM provider."""
     
-    def __init__(self, model: str = None):
+    def __init__(self, api_key: str = None, model: str = None):
+        self.api_key = api_key or os.environ.get("OPENAI_API_KEY")
         self.model = model or os.environ.get("OPENAI_MODEL", "gpt-4o")
-        self.api_key = os.environ.get("OPENAI_API_KEY")
+        self._client = None
     
-    def generate(self, prompt: str, max_tokens: int = 2048) -> str:
-        try:
-            import openai
-            
-            client = openai.OpenAI(api_key=self.api_key)
-            
-            response = client.chat.completions.create(
-                model=self.model,
-                max_tokens=max_tokens,
-                messages=[{"role": "user", "content": prompt}]
-            )
-            
-            return response.choices[0].message.content
-        except Exception as e:
-            return f"[OpenAI Error: {str(e)}]"
+    def _get_client(self):
+        if self._client is None:
+            try:
+                from openai import OpenAI
+                self._client = OpenAI(api_key=self.api_key)
+            except ImportError:
+                raise ImportError("openai package not installed. Run: pip install openai")
+        return self._client
+    
+    def generate(self, prompt: str) -> str:
+        client = self._get_client()
+        response = client.chat.completions.create(
+            model=self.model,
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=4096
+        )
+        return response.choices[0].message.content
 
 
 class AnthropicLLM:
-    """Anthropic LLM wrapper."""
+    """Anthropic LLM provider."""
     
-    def __init__(self, model: str = None):
-        self.model = model or os.environ.get("ANTHROPIC_MODEL", "claude-3-sonnet-20240229")
-        self.api_key = os.environ.get("ANTHROPIC_API_KEY")
+    def __init__(self, api_key: str = None, model: str = None):
+        self.api_key = api_key or os.environ.get("ANTHROPIC_API_KEY")
+        self.model = model or os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-4-20250514")
+        self._client = None
     
-    def generate(self, prompt: str, max_tokens: int = 2048) -> str:
-        try:
-            import anthropic
-            
-            client = anthropic.Anthropic(api_key=self.api_key)
-            
-            message = client.messages.create(
-                model=self.model,
-                max_tokens=max_tokens,
-                messages=[{"role": "user", "content": prompt}]
-            )
-            
-            return message.content[0].text
-        except Exception as e:
-            return f"[Anthropic Error: {str(e)}]"
+    def _get_client(self):
+        if self._client is None:
+            try:
+                from anthropic import Anthropic
+                self._client = Anthropic(api_key=self.api_key)
+            except ImportError:
+                raise ImportError("anthropic package not installed. Run: pip install anthropic")
+        return self._client
+    
+    def generate(self, prompt: str) -> str:
+        client = self._get_client()
+        response = client.messages.create(
+            model=self.model,
+            max_tokens=4096,
+            messages=[{"role": "user", "content": prompt}]
+        )
+        return response.content[0].text
+
+
+# Global LLM provider
+LLM_PROVIDER = None
+
+
+def _init_llm_provider():
+    """Initialize LLM provider based on environment."""
+    global LLM_PROVIDER
+    
+    if LLM_PROVIDER is not None:
+        return
+    
+    if os.environ.get("OPENAI_API_KEY"):
+        LLM_PROVIDER = OpenAILLM()
+        print("[LLM] Using OpenAI provider")
+    elif os.environ.get("ANTHROPIC_API_KEY"):
+        LLM_PROVIDER = AnthropicLLM()
+        print("[LLM] Using Anthropic provider")
 
 
 def atomic_call_llm(input_data: Any, args: Dict[str, Any], context: Dict[str, Any]) -> str:
     """Call the language model."""
-    provider = _get_llm_provider()
+    global LLM_PROVIDER
+    
+    # Initialize provider if needed
+    _init_llm_provider()
     
     prompt_template = args.get("prompt", "{input}")
     
@@ -424,17 +748,13 @@ def atomic_call_llm(input_data: Any, args: Dict[str, Any], context: Dict[str, An
         for key, value in input_data.items():
             prompt = prompt.replace(f"{{${key}}}", str(value))
             prompt = prompt.replace(f"{{{key}}}", str(value))
-    elif input_data is None:
-        prompt = prompt_template.replace("{input}", "")
+        prompt = prompt.replace("{input}", json.dumps(input_data))
     else:
         prompt = prompt_template.replace("{input}", str(input_data))
     
-    # Clean up any remaining template variables
-    prompt = prompt.replace("{input}", "").replace("{$input}", "")
-    
-    # If LLM provider is configured, use it
-    if provider:
-        return provider.generate(prompt)
+    # Call LLM
+    if LLM_PROVIDER:
+        return LLM_PROVIDER.generate(prompt)
     
     # Placeholder response
     return f"[LLM Response to: {prompt[:100]}...]"

@@ -7,6 +7,7 @@ Contains the fundamental components:
 - Interpreter: Execution engine
 - Tension: Drive force management
 - Memory: Living memory system
+- Factory: Structon creation helpers
 """
 
 from .schema import (
@@ -24,7 +25,8 @@ from .schema import (
 from .atomics import (
     get_atomic,
     list_atomics,
-    registry
+    registry,
+    set_interpreter
 )
 
 from .interpreter import (
@@ -48,6 +50,33 @@ from .memory import (
     LivingMemory
 )
 
+from .factory import (
+    # Validation
+    validate_structon,
+    is_valid_structon,
+    
+    # Blueprint loading
+    load_blueprint,
+    list_blueprints,
+    
+    # Creation helpers
+    generate_id,
+    create_node,
+    create_structon,
+    create_from_blueprint,
+    
+    # LLM generation
+    generate_structon_prompt,
+    generate_structon_via_llm,
+    
+    # Saving
+    save_structon,
+    
+    # Quick builders
+    quick_llm_structon,
+    quick_memory_structon
+)
+
 __all__ = [
     # Schema
     "Structon",
@@ -64,6 +93,7 @@ __all__ = [
     "get_atomic",
     "list_atomics",
     "registry",
+    "set_interpreter",
     
     # Interpreter
     "Interpreter",
@@ -82,4 +112,19 @@ __all__ = [
     # Memory
     "MemoryStructon",
     "LivingMemory",
+    
+    # Factory
+    "validate_structon",
+    "is_valid_structon",
+    "load_blueprint",
+    "list_blueprints",
+    "generate_id",
+    "create_node",
+    "create_structon",
+    "create_from_blueprint",
+    "generate_structon_prompt",
+    "generate_structon_via_llm",
+    "save_structon",
+    "quick_llm_structon",
+    "quick_memory_structon",
 ]

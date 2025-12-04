@@ -1,0 +1,74 @@
+{
+  "structure_id": "CHANGE_ME",
+  "structure_type": "composite",
+  "intent": "Agent with memory and learning",
+  "description": "DESCRIBE AGENT PURPOSE",
+  "phases": [
+    "sense",
+    "act",
+    "feedback"
+  ],
+  "tension": 0.8,
+  "importance": 0.8,
+  "nodes": [
+    {
+      "id": "s1",
+      "type": "input",
+      "phase": "sense",
+      "description": "Get task input",
+      "atomic": "get",
+      "args": {
+        "key": "task"
+      },
+      "output": "$task"
+    },
+    {
+      "id": "a1",
+      "type": "process",
+      "phase": "act",
+      "description": "Execute task with LLM",
+      "atomic": "call_llm",
+      "input": "$task",
+      "args": {
+        "prompt": "Complete this task: {input}"
+      },
+      "output": "$result"
+    },
+    {
+      "id": "f1",
+      "type": "process",
+      "phase": "feedback",
+      "description": "Learn from experience",
+      "atomic": "learn_from_experience",
+      "input": "$result",
+      "args": {
+        "task": "$task",
+        "success": true
+      },
+      "output": "$memory"
+    },
+    {
+      "id": "f2",
+      "type": "output",
+      "phase": "feedback",
+      "description": "Return result",
+      "atomic": "emit",
+      "input": "$result",
+      "output": "$output"
+    }
+  ],
+  "edges": [
+    {
+      "from": "s1",
+      "to": "a1"
+    },
+    {
+      "from": "a1",
+      "to": "f1"
+    },
+    {
+      "from": "a1",
+      "to": "f2"
+    }
+  ]
+}

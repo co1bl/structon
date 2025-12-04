@@ -1,0 +1,86 @@
+{
+  "structure_id": "CHANGE_ME",
+  "structure_type": "composite",
+  "intent": "Memory operation",
+  "description": "DESCRIBE MEMORY OPERATION",
+  "phases": [
+    "sense",
+    "act",
+    "feedback"
+  ],
+  "tension": 0.5,
+  "importance": 0.5,
+  "nodes": [
+    {
+      "id": "s1",
+      "type": "input",
+      "phase": "sense",
+      "description": "Get context",
+      "atomic": "get",
+      "args": {
+        "key": "context"
+      },
+      "output": "$context"
+    },
+    {
+      "id": "s2",
+      "type": "process",
+      "phase": "sense",
+      "description": "Load memories",
+      "atomic": "load_memories",
+      "args": {},
+      "output": "$memories"
+    },
+    {
+      "id": "a1",
+      "type": "process",
+      "phase": "act",
+      "description": "Sense relevance",
+      "atomic": "sense_memories",
+      "input": "$context",
+      "args": {
+        "memories": "$memories"
+      },
+      "output": "$sensed"
+    },
+    {
+      "id": "a2",
+      "type": "process",
+      "phase": "act",
+      "description": "Activate top memories",
+      "atomic": "activate_memories",
+      "input": "$sensed",
+      "args": {
+        "top_k": 3
+      },
+      "output": "$active"
+    },
+    {
+      "id": "f1",
+      "type": "output",
+      "phase": "feedback",
+      "description": "Return active memories",
+      "atomic": "emit",
+      "input": "$active",
+      "output": "$output"
+    }
+  ],
+  "edges": [
+    {
+      "from": "s1",
+      "to": "a1"
+    },
+    {
+      "from": "s2",
+      "to": "a1"
+    },
+    {
+      "from": "a1",
+      "to": "a2"
+    },
+    {
+      "from": "a2",
+      "to": "f1"
+    }
+  ]
+}
